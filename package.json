@@ -1,0 +1,12 @@
+{
+  "name": "domain-checker",
+  "version": "1.0.0",
+  "description": "Vérificateur de domaines — contenu actif et SSL",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=14"
+  }
+}

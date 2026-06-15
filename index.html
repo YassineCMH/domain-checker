@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Domain Checker</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0f1117;
+    --bg2: #181c27;
+    --bg3: #1e2333;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.15);
+    --text: #e8eaf0;
+    --text2: #8b93a8;
+    --text3: #5a6275;
+    --blue: #4f8ef7;
+    --blue-bg: rgba(79,142,247,0.12);
+    --green: #34c97a;
+    --green-bg: rgba(52,201,122,0.12);
+    --red: #f25c5c;
+    --red-bg: rgba(242,92,92,0.12);
+    --amber: #f5a623;
+    --amber-bg: rgba(245,166,35,0.12);
+    --radius: 10px;
+    --radius-sm: 6px;
+  }
+
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; line-height: 1.5; }
+
+  .page { max-width: 900px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
+
+  header { margin-bottom: 2.5rem; }
+  .logo { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+  .logo-icon { width: 36px; height: 36px; background: var(--blue-bg); border: 1px solid rgba(79,142,247,0.3); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; }
+  .logo-icon svg { width: 18px; height: 18px; stroke: var(--blue); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  h1 { font-size: 1.3rem; font-weight: 600; color: var(--text); letter-spacing: -0.02em; }
+  .subtitle { font-size: 0.875rem; color: var(--text2); }
+
+  .card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1rem; }
+
+  .input-label { font-size: 0.75rem; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; display: block; }
+  textarea { width: 100%; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 12px; color: var(--text); font-family: 'Menlo', 'Consolas', monospace; font-size: 0.8rem; line-height: 1.7; resize: vertical; min-height: 130px; outline: none; transition: border-color 0.15s; }
+  textarea:focus { border-color: var(--blue); }
+  textarea::placeholder { color: var(--text3); }
+
+  .toolbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 1.25rem; }
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: var(--radius-sm); font-size: 0.875rem; font-weight: 500; cursor: pointer; border: 1px solid var(--border2); background: transparent; color: var(--text2); transition: all 0.15s; }
+  .btn:hover { background: var(--bg3); color: var(--text); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-primary { background: var(--blue); border-color: var(--blue); color: #fff; }
+  .btn-primary:hover { background: #3a7de8; border-color: #3a7de8; color: #fff; }
+  .btn-primary:disabled { background: var(--blue); opacity: 0.4; }
+  .btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+  .progress-wrap { height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; margin-bottom: 1.25rem; display: none; }
+  .progress-bar { height: 100%; background: var(--blue); border-radius: 2px; transition: width 0.3s ease; }
+
+  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 1.25rem; display: none; }
+  .stat { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 14px; }
+  .stat-val { font-size: 1.5rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .stat-label { font-size: 0.7rem; color: var(--text3); text-transform: uppercase; letter-spacing: 0.07em; margin-top: 2px; }
+  .stat.s-blue .stat-val { color: var(--blue); }
+  .stat.s-green .stat-val { color: var(--green); }
+  .stat.s-red .stat-val { color: var(--red); }
+  .stat.s-amber .stat-val { color: var(--amber); }
+
+  .filters { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; display: none; }
+  .filter-btn { font-size: 0.75rem; padding: 4px 12px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--text2); cursor: pointer; transition: all 0.15s; }
+  .filter-btn:hover { border-color: var(--border2); color: var(--text); }
+  .filter-btn.active { background: var(--blue-bg); border-color: rgba(79,142,247,0.4); color: var(--blue); }
+
+  .table-wrap { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; display: none; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.8rem; table-layout: fixed; }
+  th { padding: 10px 14px; text-align: left; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text3); border-bottom: 1px solid var(--border); font-weight: 500; }
+  td { padding: 11px 14px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: middle; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+  .col-domain { width: 38%; }
+  .col-content { width: 20%; }
+  .col-ssl { width: 22%; }
+  .col-status { width: 20%; }
+
+  .domain-cell { display: flex; align-items: center; gap: 8px; }
+  .domain-icon { width: 22px; height: 22px; border-radius: 4px; background: var(--bg3); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .domain-icon svg { width: 11px; height: 11px; stroke: var(--text3); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .domain-name { font-family: 'Menlo', 'Consolas', monospace; font-size: 0.78rem; color: var(--text); overflow: hidden; text-overflow: ellipsis; }
+
+  .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 4px; font-size: 0.72rem; font-weight: 500; }
+  .badge svg { width: 10px; height: 10px; stroke: currentColor; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+  .b-green { background: var(--green-bg); color: var(--green); }
+  .b-red { background: var(--red-bg); color: var(--red); }
+  .b-amber { background: var(--amber-bg); color: var(--amber); }
+  .b-blue { background: var(--blue-bg); color: var(--blue); }
+  .b-gray { background: var(--bg3); color: var(--text3); }
+
+  .empty { padding: 3rem; text-align: center; color: var(--text3); font-size: 0.875rem; }
+
+  .export-right { margin-left: auto; }
+
+  .mode-note { font-size: 0.75rem; color: var(--text3); margin-top: 1rem; padding: 10px 12px; background: var(--bg3); border-radius: var(--radius-sm); border: 1px solid var(--border); }
+  .mode-note strong { color: var(--text2); }
+
+  @media (max-width: 600px) {
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .col-ssl { display: none; }
+    .col-domain { width: 50%; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <div class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      <h1>Domain Checker</h1>
+    </div>
+    <p class="subtitle">Vérifiez la disponibilité et le certificat SSL de vos domaines</p>
+  </header>
+
+  <div class="card">
+    <label class="input-label">Domaines à vérifier</label>
+    <textarea id="domains-input" placeholder="google.com&#10;github.com&#10;example.ma&#10;monsite.com&#10;..."></textarea>
+  </div>
+
+  <div class="toolbar">
+    <button class="btn btn-primary" id="check-btn" onclick="startCheck()">
+      <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      Lancer la vérification
+    </button>
+    <button class="btn" onclick="loadSample()">Exemples</button>
+    <button class="btn" onclick="clearAll()">Effacer</button>
+    <button class="btn export-right" id="export-btn" onclick="exportCSV()" style="display:none">
+      <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Exporter CSV
+    </button>
+  </div>
+
+  <div class="progress-wrap" id="progress-wrap">
+    <div class="progress-bar" id="progress-bar" style="width:0%"></div>
+  </div>
+
+  <div class="stats-grid" id="stats-grid">
+    <div class="stat s-blue"><div class="stat-val" id="s-total">0</div><div class="stat-label">Total</div></div>
+    <div class="stat s-green"><div class="stat-val" id="s-content">0</div><div class="stat-label">Avec contenu</div></div>
+    <div class="stat s-green"><div class="stat-val" id="s-ssl">0</div><div class="stat-label">SSL valide</div></div>
+    <div class="stat s-red"><div class="stat-val" id="s-fail">0</div><div class="stat-label">Inaccessibles</div></div>
+  </div>
+
+  <div class="filters" id="filters">
+    <button class="filter-btn active" onclick="setFilter('all',this)">Tous</button>
+    <button class="filter-btn" onclick="setFilter('content',this)">Avec contenu</button>
+    <button class="filter-btn" onclick="setFilter('ssl',this)">SSL valide</button>
+    <button class="filter-btn" onclick="setFilter('no-ssl',this)">Sans SSL</button>
+    <button class="filter-btn" onclick="setFilter('fail',this)">Inaccessibles</button>
+  </div>
+
+  <div class="table-wrap" id="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th class="col-domain">Domaine</th>
+          <th class="col-content">Contenu</th>
+          <th class="col-ssl">SSL / HTTPS</th>
+          <th class="col-status">HTTP</th>
+        </tr>
+      </thead>
+      <tbody id="results-body"></tbody>
+    </table>
+    <div class="empty" id="empty-msg" style="display:none">Aucun résultat pour ce filtre.</div>
+  </div>
+
+  <div class="mode-note" id="mode-note">
+    <strong>Mode :</strong> Vérification via le serveur Node.js local (<code>localhost:3000</code>). Assurez-vous que <code>server.js</code> tourne.
+  </div>
+</div>
+
+<script>
+let allResults = [];
+let currentFilter = 'all';
+const API = '';
+
+const icons = {
+  check: `<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>`,
+  x: `<svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`,
+  lock: `<svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`,
+  unlock: `<svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>`,
+  world: `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`,
+  loader: `<svg viewBox="0 0 24 24"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg>`,
+  wifi: `<svg viewBox="0 0 24 24"><line x1="1" y1="1" x2="23" y2="23"/><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/><path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/><path d="M10.71 5.05A16 16 0 0 1 22.56 9"/><path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>`
+};
+
+function loadSample() {
+  document.getElementById('domains-input').value =
+    'google.com\ngithub.com\nstackoverflow.com\nexample.com\nwikipedia.org\nexpired.badssl.com\nself-signed.badssl.com\nnonexistentdomain99999.xyz';
+}
+
+function clearAll() {
+  document.getElementById('domains-input').value = '';
+  allResults = [];
+  document.getElementById('results-body').innerHTML = '';
+  ['table-wrap','stats-grid','filters','progress-wrap'].forEach(id => {
+    document.getElementById(id).style.display = 'none';
+  });
+  document.getElementById('export-btn').style.display = 'none';
+  document.getElementById('progress-bar').style.width = '0%';
+}
+
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTable();
+}
+
+function badge(cls, icon, label) {
+  return `<span class="badge ${cls}">${icons[icon]}${label}</span>`;
+}
+
+function rowHTML(r) {
+  const pending = r.status === 'pending';
+  const contentB = pending ? badge('b-gray','loader','...') :
+    r.hasContent ? badge('b-green','check','Oui') : badge('b-red','x','Non');
+
+  const sslB = pending ? badge('b-gray','loader','...') :
+    r.ssl === 'valid' ? badge('b-green','lock','HTTPS valide') :
+    r.ssl === 'redirect-https' ? badge('b-amber','lock','Redirige HTTPS') :
+    badge('b-red','unlock','Absent');
+
+  const httpB = pending ? badge('b-gray','loader','...') :
+    r.error ? badge('b-red','wifi','Inaccessible') :
+    r.httpStatus >= 200 && r.httpStatus < 400 ? badge('b-green','check', r.httpStatus) :
+    badge('b-amber','x', r.httpStatus || '?');
+
+  return `<tr>
+    <td class="col-domain">
+      <div class="domain-cell">
+        <div class="domain-icon">${icons.world}</div>
+        <span class="domain-name">${r.domain}</span>
+      </div>
+    </td>
+    <td class="col-content">${contentB}</td>
+    <td class="col-ssl">${sslB}</td>
+    <td class="col-status">${httpB}</td>
+  </tr>`;
+}
+
+function renderTable() {
+  const body = document.getElementById('results-body');
+  const empty = document.getElementById('empty-msg');
+  let data = allResults;
+  if (currentFilter === 'content') data = allResults.filter(r => r.hasContent);
+  if (currentFilter === 'ssl') data = allResults.filter(r => r.ssl === 'valid');
+  if (currentFilter === 'no-ssl') data = allResults.filter(r => r.ssl === 'none' && !r.error);
+  if (currentFilter === 'fail') data = allResults.filter(r => r.error);
+  if (data.length === 0 && allResults.some(r => r.status !== 'pending')) {
+    body.innerHTML = '';
+    empty.style.display = 'block';
+  } else {
+    empty.style.display = 'none';
+    body.innerHTML = data.map(rowHTML).join('');
+  }
+}
+
+function updateStats() {
+  const done = allResults.filter(r => r.status !== 'pending');
+  document.getElementById('s-total').textContent = allResults.length;
+  document.getElementById('s-content').textContent = done.filter(r => r.hasContent).length;
+  document.getElementById('s-ssl').textContent = done.filter(r => r.ssl === 'valid').length;
+  document.getElementById('s-fail').textContent = done.filter(r => r.error).length;
+}
+
+async function startCheck() {
+  const raw = document.getElementById('domains-input').value.trim();
+  if (!raw) return;
+  const domains = [...new Set(
+    raw.split('\n')
+      .map(d => d.trim().replace(/^https?:\/\//,'').replace(/\/.*/,'').toLowerCase())
+      .filter(d => d.length > 2 && d.includes('.'))
+  )];
+  if (!domains.length) return;
+
+  const btn = document.getElementById('check-btn');
+  btn.disabled = true;
+  btn.innerHTML = `${icons.loader} Vérification...`;
+
+  allResults = domains.map(d => ({ domain: d, hasContent: false, ssl: 'none', httpStatus: null, error: null, status: 'pending' }));
+
+  ['table-wrap','stats-grid','filters','progress-wrap'].forEach(id => {
+    document.getElementById(id).style.display = id === 'stats-grid' ? 'grid' : id === 'filters' ? 'flex' : 'block';
+  });
+  document.getElementById('export-btn').style.display = 'inline-flex';
+  renderTable(); updateStats();
+
+  try {
+    const resp = await fetch('/check', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ domains })
+    });
+    const data = await resp.json();
+    if (data.results) {
+      data.results.forEach((r, i) => {
+        allResults[i] = { ...r, status: 'done' };
+      });
+      document.getElementById('progress-bar').style.width = '100%';
+    }
+  } catch (e) {
+    allResults.forEach(r => { r.status = 'done'; r.error = 'Server unreachable'; });
+    document.getElementById('mode-note').innerHTML = `<strong style="color:#f25c5c">⚠ Serveur inaccessible.</strong> Lancez <code>node server.js</code> puis rechargez la page.`;
+  }
+
+  updateStats(); renderTable();
+  btn.disabled = false;
+  btn.innerHTML = `${icons.check} Relancer`;
+}
+
+function exportCSV() {
+  const rows = [['Domaine','Contenu','SSL','HTTP Status','Erreur']];
+  allResults.forEach(r => rows.push([
+    r.domain,
+    r.hasContent ? 'Oui' : 'Non',
+    r.ssl === 'valid' ? 'Valide' : r.ssl === 'redirect-https' ? 'Redirige HTTPS' : 'Absent',
+    r.httpStatus || '',
+    r.error || ''
+  ]));
+  const csv = rows.map(r => r.map(c => `"${c}"`).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = `domains_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+</script>
+</body>
+</html>
