@@ -3,337 +3,1272 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Domain Checker</title>
+<title>Domain Checker Pro</title>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#080b12;--bg2:#0e1220;--bg3:#141829;--bg4:#1a2035;--bg5:#1f2540;
+  --border:rgba(255,255,255,0.065);--border2:rgba(255,255,255,0.12);--border3:rgba(255,255,255,0.2);
+  --text:#d8e0f0;--text2:#7a8699;--text3:#424e64;
+  --blue:#4f8ef7;--blue2:#3a7de8;--blue-bg:rgba(79,142,247,0.1);--blue-glow:rgba(79,142,247,0.2);
+  --green:#2ecc78;--green-bg:rgba(46,204,120,0.1);
+  --red:#f05c5c;--red-bg:rgba(240,92,92,0.1);
+  --amber:#f5a623;--amber-bg:rgba(245,166,35,0.1);
+  --purple:#a78bfa;--purple-bg:rgba(167,139,250,0.1);
+  --r:10px;--rs:6px;--rx:14px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.5;font-size:14px}
 
-  :root {
-    --bg: #0f1117;
-    --bg2: #181c27;
-    --bg3: #1e2333;
-    --border: rgba(255,255,255,0.08);
-    --border2: rgba(255,255,255,0.15);
-    --text: #e8eaf0;
-    --text2: #8b93a8;
-    --text3: #5a6275;
-    --blue: #4f8ef7;
-    --blue-bg: rgba(79,142,247,0.12);
-    --green: #34c97a;
-    --green-bg: rgba(52,201,122,0.12);
-    --red: #f25c5c;
-    --red-bg: rgba(242,92,92,0.12);
-    --amber: #f5a623;
-    --amber-bg: rgba(245,166,35,0.12);
-    --radius: 10px;
-    --radius-sm: 6px;
-  }
+/* ─── LAYOUT ─── */
+.shell{display:flex;min-height:100vh}
+.sidebar{width:228px;background:var(--bg2);border-right:1px solid var(--border);padding:1.1rem 0.8rem;flex-shrink:0;display:flex;flex-direction:column;gap:1.1rem;position:sticky;top:0;height:100vh;overflow-y:auto}
+.main{flex:1;padding:1.75rem 2rem;max-width:calc(100% - 228px);overflow-x:hidden}
 
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; line-height: 1.5; }
+/* ─── SIDEBAR ─── */
+.brand{display:flex;align-items:center;gap:9px;padding:2px 4px;margin-bottom:4px}
+.brand-icon{width:32px;height:32px;background:linear-gradient(135deg,#3a7de8,#7c5cf6);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 0 16px rgba(79,142,247,0.35)}
+.brand-icon svg{width:16px;height:16px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.brand-name{font-size:0.875rem;font-weight:700;letter-spacing:-0.02em}
+.brand-badge{font-size:0.55rem;background:linear-gradient(90deg,#3a7de8,#7c5cf6);color:#fff;padding:1px 5px;border-radius:3px;font-weight:700;letter-spacing:0.05em;margin-left:2px;vertical-align:2px}
+.nav-section{display:flex;flex-direction:column;gap:2px}
+.nav-label{font-size:0.6rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--text3);padding:0 8px;margin-bottom:3px;font-weight:700}
+.nav-item{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:var(--rs);cursor:pointer;color:var(--text2);font-size:0.79rem;transition:all 0.12s;border:none;background:none;width:100%;text-align:left}
+.nav-item svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.nav-item:hover{background:var(--bg3);color:var(--text)}
+.nav-item.active{background:var(--blue-bg);color:var(--blue);border:1px solid rgba(79,142,247,0.2)}
+.sidebar-stats{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:0.85rem;display:flex;flex-direction:column;gap:8px}
+.sstat{display:flex;justify-content:space-between;align-items:center}
+.sstat-label{font-size:0.7rem;color:var(--text3)}
+.sstat-val{font-size:0.8rem;font-weight:600;font-variant-numeric:tabular-nums}
+.sstat-bar{height:3px;background:var(--border);border-radius:2px;overflow:hidden}
+.sstat-fill{height:100%;border-radius:2px;transition:width 0.4s ease;width:0%}
+.sidebar-footer{margin-top:auto;font-size:0.67rem;color:var(--text3);padding:2px 4px;line-height:1.9}
+.sidebar-footer a{color:var(--text3);text-decoration:none}
+.sidebar-footer a:hover{color:var(--text2)}
 
-  .page { max-width: 900px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
+/* ─── PANELS ─── */
+.panel{display:none}
+.panel.active{display:block}
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.4rem;gap:1rem;flex-wrap:wrap}
+.page-title{font-size:1.15rem;font-weight:700;letter-spacing:-0.02em}
+.page-sub{font-size:0.77rem;color:var(--text2);margin-top:3px}
+.kbd{display:inline-flex;align-items:center;gap:3px;font-size:0.65rem;background:var(--bg3);border:1px solid var(--border2);border-radius:3px;padding:1px 5px;color:var(--text3);font-family:monospace}
 
-  header { margin-bottom: 2.5rem; }
-  .logo { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
-  .logo-icon { width: 36px; height: 36px; background: var(--blue-bg); border: 1px solid rgba(79,142,247,0.3); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; }
-  .logo-icon svg { width: 18px; height: 18px; stroke: var(--blue); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-  h1 { font-size: 1.3rem; font-weight: 600; color: var(--text); letter-spacing: -0.02em; }
-  .subtitle { font-size: 0.875rem; color: var(--text2); }
+/* ─── INPUT ─── */
+.input-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1.1rem;margin-bottom:0.9rem}
+.input-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.input-label{font-size:0.67rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--text3);font-weight:700}
+.input-hint{font-size:0.69rem;color:var(--text3)}
+.input-row{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:flex-start}
+textarea{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);padding:10px 12px;color:var(--text);font-family:'Menlo','Consolas',monospace;font-size:0.76rem;line-height:1.85;resize:vertical;min-height:140px;outline:none;transition:border-color 0.15s,box-shadow 0.15s}
+textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-glow)}
+textarea::placeholder{color:var(--text3)}
+.drop-zone{border:1.5px dashed var(--border2);border-radius:var(--rs);padding:1.1rem 0.9rem;text-align:center;cursor:pointer;transition:all 0.15s;background:var(--bg3);color:var(--text3);font-size:0.74rem;display:flex;flex-direction:column;align-items:center;gap:5px;min-width:120px;justify-content:center}
+.drop-zone:hover,.drop-zone.over{border-color:var(--blue);color:var(--blue);background:var(--blue-bg)}
+.drop-zone svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.5}
+.drop-zone input[type=file]{display:none}
+.domain-count-badge{font-size:0.68rem;color:var(--text3);padding:2px 8px;background:var(--bg4);border-radius:3px;font-variant-numeric:tabular-nums}
 
-  .card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1rem; }
+/* ─── TOOLBAR ─── */
+.toolbar{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:1.1rem}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:var(--rs);font-size:0.79rem;font-weight:500;cursor:pointer;border:1px solid var(--border2);background:transparent;color:var(--text2);transition:all 0.12s;white-space:nowrap}
+.btn:hover{background:var(--bg3);color:var(--text);border-color:var(--border3)}
+.btn:disabled{opacity:0.32;cursor:not-allowed}
+.btn svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.btn-primary{background:var(--blue);border-color:var(--blue);color:#fff;box-shadow:0 2px 12px rgba(79,142,247,0.3)}
+.btn-primary:hover{background:var(--blue2);border-color:var(--blue2);color:#fff;box-shadow:0 4px 18px rgba(79,142,247,0.45)}
+.btn-primary:disabled{background:var(--blue);opacity:0.35}
+.btn-danger{background:var(--red-bg);border-color:rgba(240,92,92,0.3);color:var(--red);display:none}
+.btn-danger:hover{background:rgba(240,92,92,0.18)}
+.btn-export{background:var(--green-bg);border-color:rgba(46,204,120,0.3);color:var(--green)}
+.btn-export:hover{background:rgba(46,204,120,0.18)}
+.sep{width:1px;height:22px;background:var(--border2);flex-shrink:0}
+.ml-auto{margin-left:auto}
 
-  .input-label { font-size: 0.75rem; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; display: block; }
-  textarea { width: 100%; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 12px; color: var(--text); font-family: 'Menlo', 'Consolas', monospace; font-size: 0.8rem; line-height: 1.7; resize: vertical; min-height: 130px; outline: none; transition: border-color 0.15s; }
-  textarea:focus { border-color: var(--blue); }
-  textarea::placeholder { color: var(--text3); }
+/* ─── PROGRESS ─── */
+.progress-wrap{margin-bottom:1.1rem;display:none;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:0.85rem 1rem}
+.progress-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
+.progress-label{font-size:0.77rem;color:var(--text2);display:flex;align-items:center;gap:7px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--blue);animation:pulse 1.2s ease-in-out infinite;flex-shrink:0}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.2}}
+.progress-count{font-size:0.71rem;color:var(--text3);font-variant-numeric:tabular-nums}
+.progress-pct{font-size:0.71rem;color:var(--blue);font-weight:700;font-variant-numeric:tabular-nums}
+.progress-track{height:5px;background:var(--border);border-radius:3px;overflow:hidden}
+.progress-bar{height:100%;background:linear-gradient(90deg,var(--blue),#7c5cf6);border-radius:3px;transition:width 0.22s ease;width:0%}
+.progress-bar.done{background:linear-gradient(90deg,var(--green),#22a463)}
+.progress-meta{display:flex;gap:14px;margin-top:8px;flex-wrap:wrap}
+.pmeta{font-size:0.69rem;color:var(--text3)}
+.pmeta b{color:var(--text2)}
 
-  .toolbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 1.25rem; }
-  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: var(--radius-sm); font-size: 0.875rem; font-weight: 500; cursor: pointer; border: 1px solid var(--border2); background: transparent; color: var(--text2); transition: all 0.15s; }
-  .btn:hover { background: var(--bg3); color: var(--text); }
-  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
-  .btn-primary { background: var(--blue); border-color: var(--blue); color: #fff; }
-  .btn-primary:hover { background: #3a7de8; border-color: #3a7de8; color: #fff; }
-  .btn-primary:disabled { background: var(--blue); opacity: 0.4; }
-  .btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+/* ─── STAT CARDS ─── */
+.stats-row{display:none;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:1.1rem}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:13px 15px;cursor:pointer;transition:all 0.15s;position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.s-blue::before{background:linear-gradient(90deg,#4f8ef7,#7c5cf6)}
+.s-green::before{background:var(--green)}
+.s-red::before{background:var(--red)}
+.s-amber::before{background:var(--amber)}
+.stat-card:hover{border-color:var(--border2);transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,0,0,0.25)}
+.stat-card.selected{border-color:var(--blue);background:var(--blue-bg)}
+.stat-val{font-size:1.7rem;font-weight:700;font-variant-numeric:tabular-nums;line-height:1}
+.stat-label{font-size:0.66rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-top:4px}
+.stat-pct{font-size:0.69rem;margin-top:5px;color:var(--text3)}
+.s-blue .stat-val{color:var(--blue)}
+.s-green .stat-val{color:var(--green)}
+.s-red .stat-val{color:var(--red)}
+.s-amber .stat-val{color:var(--amber)}
 
-  .progress-wrap { height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; margin-bottom: 1.25rem; display: none; }
-  .progress-bar { height: 100%; background: var(--blue); border-radius: 2px; transition: width 0.3s ease; }
+/* ─── ADVANCED FILTERS ─── */
+.filter-panel{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:0;margin-bottom:9px;display:none;overflow:hidden}
+.filter-panel-header{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--border);cursor:pointer;user-select:none}
+.filter-panel-title{font-size:0.72rem;font-weight:600;color:var(--text2);display:flex;align-items:center;gap:7px}
+.filter-panel-title svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2}
+.filter-active-count{background:var(--blue);color:#fff;font-size:0.6rem;padding:1px 6px;border-radius:10px;font-weight:700}
+.filter-panel-body{padding:10px 12px;display:flex;flex-direction:column;gap:9px}
+.filter-row-adv{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.filter-row-label{font-size:0.67rem;color:var(--text3);min-width:90px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em}
+.chip-group{display:flex;gap:4px;flex-wrap:wrap}
+.chip{font-size:0.69rem;padding:3px 10px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;transition:all 0.12s;white-space:nowrap}
+.chip:hover{border-color:var(--border2);color:var(--text)}
+.chip.active{background:var(--blue-bg);border-color:rgba(79,142,247,0.4);color:var(--blue)}
+.chip.c-green.active{background:var(--green-bg);border-color:rgba(46,204,120,0.4);color:var(--green)}
+.chip.c-red.active{background:var(--red-bg);border-color:rgba(240,92,92,0.4);color:var(--red)}
+.chip.c-amber.active{background:var(--amber-bg);border-color:rgba(245,166,35,0.4);color:var(--amber)}
+.filter-reset{font-size:0.68rem;color:var(--text3);cursor:pointer;background:none;border:none;padding:0;margin-left:auto}
+.filter-reset:hover{color:var(--red)}
+.filter-sep{width:1px;height:14px;background:var(--border2);flex-shrink:0}
+.search-wrap{position:relative;margin-left:auto}
+.search-wrap svg{position:absolute;left:8px;top:50%;transform:translateY(-50%);width:11px;height:11px;stroke:var(--text3);fill:none;stroke-width:2;pointer-events:none}
+.search-wrap input{background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);padding:5px 10px 5px 25px;color:var(--text);font-size:0.72rem;outline:none;width:195px;transition:border-color 0.15s}
+.search-wrap input:focus{border-color:var(--blue)}
 
-  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 1.25rem; display: none; }
-  .stat { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 14px; }
-  .stat-val { font-size: 1.5rem; font-weight: 600; font-variant-numeric: tabular-nums; }
-  .stat-label { font-size: 0.7rem; color: var(--text3); text-transform: uppercase; letter-spacing: 0.07em; margin-top: 2px; }
-  .stat.s-blue .stat-val { color: var(--blue); }
-  .stat.s-green .stat-val { color: var(--green); }
-  .stat.s-red .stat-val { color: var(--red); }
-  .stat.s-amber .stat-val { color: var(--amber); }
+/* ─── QUICK FILTER BAR ─── */
+.quick-filter-bar{display:none;gap:5px;align-items:center;margin-bottom:7px;flex-wrap:wrap}
+.filter-toggle-btn{font-size:0.7rem;padding:4px 10px;border-radius:var(--rs);border:1px solid var(--border);background:transparent;color:var(--text3);cursor:pointer;transition:all 0.12s;display:flex;align-items:center;gap:4px}
+.filter-toggle-btn svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2}
+.filter-toggle-btn:hover{border-color:var(--border2);color:var(--text2)}
+.filter-toggle-btn.open{border-color:var(--blue);color:var(--blue);background:var(--blue-bg)}
 
-  .filters { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; display: none; }
-  .filter-btn { font-size: 0.75rem; padding: 4px 12px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--text2); cursor: pointer; transition: all 0.15s; }
-  .filter-btn:hover { border-color: var(--border2); color: var(--text); }
-  .filter-btn.active { background: var(--blue-bg); border-color: rgba(79,142,247,0.4); color: var(--blue); }
+/* ─── TABLE ─── */
+.table-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;display:none}
+.table-header{display:flex;align-items:center;justify-content:space-between;padding:8px 13px;border-bottom:1px solid var(--border);gap:8px}
+.table-count{font-size:0.7rem;color:var(--text3)}
+.col-sel-btn{font-size:0.67rem;color:var(--text3);border:1px solid var(--border);border-radius:3px;padding:2px 7px;cursor:pointer;background:none;transition:all 0.12s}
+.col-sel-btn:hover{border-color:var(--border2);color:var(--text2)}
+table{width:100%;border-collapse:collapse;font-size:0.77rem;table-layout:fixed}
+th{padding:8px 12px;text-align:left;font-size:0.64rem;text-transform:uppercase;letter-spacing:0.07em;color:var(--text3);border-bottom:1px solid var(--border);font-weight:700;cursor:pointer;user-select:none;white-space:nowrap;transition:color 0.12s}
+th:hover{color:var(--text2)}
+th .sort-icon{display:inline;vertical-align:middle;margin-left:3px;opacity:0.3;font-style:normal;font-size:0.65rem}
+th.sorted .sort-icon{opacity:1;color:var(--blue)}
+th.sorted{color:var(--text)}
+th.nosort{cursor:default}
+th.col-hidden,td.col-hidden{display:none}
+td{padding:9px 12px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,0.014)}
+.col-n{width:36px;text-align:center}
+.col-domain{width:28%}
+.col-content{width:11%}
+.col-ssl{width:16%}
+.col-http{width:9%}
+.col-redirect{width:20%}
+.col-time{width:8%}
+.col-ip{width:14%}
+.domain-cell{display:flex;align-items:center;gap:7px}
+.fav{width:15px;height:15px;border-radius:3px;flex-shrink:0;background:var(--bg3)}
+.domain-name{font-family:'Menlo','Consolas',monospace;font-size:0.72rem;overflow:hidden;text-overflow:ellipsis}
+.badge{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:4px;font-size:0.66rem;font-weight:600;letter-spacing:0.01em}
+.badge svg{width:9px;height:9px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.b-green{background:var(--green-bg);color:var(--green)}
+.b-red{background:var(--red-bg);color:var(--red)}
+.b-amber{background:var(--amber-bg);color:var(--amber)}
+.b-gray{background:rgba(255,255,255,0.05);color:var(--text3)}
+.b-blue{background:var(--blue-bg);color:var(--blue)}
+.redirect-url{font-size:0.67rem;color:var(--text3);font-family:monospace;overflow:hidden;text-overflow:ellipsis;max-width:100%;display:block}
+.time-val{font-size:0.67rem;color:var(--text3);font-variant-numeric:tabular-nums}
+.row-num{font-size:0.65rem;color:var(--text3);font-variant-numeric:tabular-nums}
+.copy-cell{font-size:0.67rem;color:var(--text3);cursor:pointer;opacity:0;transition:opacity 0.1s}
+tr:hover .copy-cell{opacity:1}
+.copy-cell:hover{color:var(--blue)}
 
-  .table-wrap { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; display: none; }
-  table { width: 100%; border-collapse: collapse; font-size: 0.8rem; table-layout: fixed; }
-  th { padding: 10px 14px; text-align: left; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text3); border-bottom: 1px solid var(--border); font-weight: 500; }
-  td { padding: 11px 14px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: middle; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  tr:last-child td { border-bottom: none; }
-  tr:hover td { background: rgba(255,255,255,0.02); }
-  .col-domain { width: 38%; }
-  .col-content { width: 20%; }
-  .col-ssl { width: 22%; }
-  .col-status { width: 20%; }
+/* ─── PAGINATION ─── */
+.pagination{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-top:1px solid var(--border)}
+.page-info{font-size:0.69rem;color:var(--text3)}
+.page-btns{display:flex;gap:3px}
+.page-btn{min-width:26px;height:26px;padding:0 5px;border-radius:var(--rs);border:1px solid var(--border);background:transparent;color:var(--text2);font-size:0.72rem;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:all 0.12s}
+.page-btn:hover{background:var(--bg3);color:var(--text)}
+.page-btn.active{background:var(--blue-bg);border-color:rgba(79,142,247,0.35);color:var(--blue);font-weight:600}
+.page-btn:disabled{opacity:0.25;cursor:not-allowed}
+.page-btn svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.page-size-sel{background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);padding:3px 6px;color:var(--text2);font-size:0.69rem;outline:none;cursor:pointer}
 
-  .domain-cell { display: flex; align-items: center; gap: 8px; }
-  .domain-icon { width: 22px; height: 22px; border-radius: 4px; background: var(--bg3); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .domain-icon svg { width: 11px; height: 11px; stroke: var(--text3); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-  .domain-name { font-family: 'Menlo', 'Consolas', monospace; font-size: 0.78rem; color: var(--text); overflow: hidden; text-overflow: ellipsis; }
+/* ─── EMPTY ─── */
+.empty-state{padding:3rem 2rem;text-align:center;color:var(--text3)}
+.empty-state svg{width:34px;height:34px;stroke:currentColor;fill:none;stroke-width:1.2;opacity:0.3;margin-bottom:9px}
+.empty-state p{font-size:0.8rem}
 
-  .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 4px; font-size: 0.72rem; font-weight: 500; }
-  .badge svg { width: 10px; height: 10px; stroke: currentColor; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
-  .b-green { background: var(--green-bg); color: var(--green); }
-  .b-red { background: var(--red-bg); color: var(--red); }
-  .b-amber { background: var(--amber-bg); color: var(--amber); }
-  .b-blue { background: var(--blue-bg); color: var(--blue); }
-  .b-gray { background: var(--bg3); color: var(--text3); }
+/* ─── COLUMNS MODAL ─── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);z-index:100;display:none;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--rx);padding:1.4rem;width:400px;max-width:95vw;box-shadow:0 24px 64px rgba(0,0,0,0.6)}
+.modal-title{font-size:0.95rem;font-weight:600;margin-bottom:2px}
+.modal-sub{font-size:0.75rem;color:var(--text2);margin-bottom:1.2rem}
+.modal-section-lbl{font-size:0.66rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;font-weight:700;margin-bottom:7px}
+.modal-opts{display:flex;flex-direction:column;gap:6px;margin-bottom:1rem}
+.col-toggle-item{display:flex;align-items:center;gap:10px;padding:8px 11px;border:1px solid var(--border);border-radius:var(--rs);cursor:pointer;transition:all 0.12s}
+.col-toggle-item:hover{border-color:var(--border2);background:var(--bg3)}
+.col-toggle-item.enabled{border-color:rgba(79,142,247,0.3);background:var(--blue-bg)}
+.toggle-ico{font-size:1rem;width:28px;text-align:center}
+.toggle-name{font-size:0.79rem;font-weight:600;flex:1}
+.toggle-desc{font-size:0.68rem;color:var(--text2)}
+.toggle-check{width:16px;height:16px;border-radius:3px;border:1.5px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all 0.12s}
+.col-toggle-item.enabled .toggle-check{background:var(--blue);border-color:var(--blue)}
+.toggle-check svg{width:9px;height:9px;stroke:#fff;fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;display:none}
+.col-toggle-item.enabled .toggle-check svg{display:block}
+.export-opt{display:flex;align-items:center;gap:10px;padding:9px 11px;border:1px solid var(--border);border-radius:var(--rs);cursor:pointer;transition:all 0.12s}
+.export-opt:hover{border-color:var(--border2);background:var(--bg3)}
+.export-opt.selected{border-color:var(--blue);background:var(--blue-bg)}
+.export-opt-ico{width:32px;height:32px;border-radius:var(--rs);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+.export-opt-name{font-size:0.79rem;font-weight:600}
+.export-opt-desc{font-size:0.68rem;color:var(--text2)}
+.export-scope{display:flex;gap:6px;margin-bottom:1rem}
+.modal-footer{display:flex;gap:7px;justify-content:flex-end;padding-top:0.75rem;border-top:1px solid var(--border)}
 
-  .empty { padding: 3rem; text-align: center; color: var(--text3); font-size: 0.875rem; }
+/* ─── SUMMARY ─── */
+.chart-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1.2rem;margin-bottom:1rem}
+.chart-title{font-size:0.73rem;font-weight:700;color:var(--text2);margin-bottom:1rem;text-transform:uppercase;letter-spacing:0.07em}
+.donut-row{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem}
+.donut-wrap{display:flex;align-items:center;gap:1rem}
+.donut-legend{display:flex;flex-direction:column;gap:6px}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:0.72rem;color:var(--text2)}
+.legend-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.legend-val{margin-left:auto;font-weight:600;color:var(--text);font-variant-numeric:tabular-nums;padding-left:8px}
+.bar-chart{display:flex;flex-direction:column;gap:8px}
+.bar-row{display:flex;align-items:center;gap:8px}
+.bar-label{font-size:0.69rem;color:var(--text2);width:80px;flex-shrink:0;text-align:right}
+.bar-track{flex:1;height:7px;background:var(--border);border-radius:4px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;transition:width 0.6s ease}
+.bar-count{font-size:0.67rem;color:var(--text3);width:32px;text-align:right;font-variant-numeric:tabular-nums}
 
-  .export-right { margin-left: auto; }
+/* ─── HISTORY ─── */
+.history-item{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:10px 14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;transition:border-color 0.12s}
+.history-item:hover{border-color:var(--border2)}
 
-  .mode-note { font-size: 0.75rem; color: var(--text3); margin-top: 1rem; padding: 10px 12px; background: var(--bg3); border-radius: var(--radius-sm); border: 1px solid var(--border); }
-  .mode-note strong { color: var(--text2); }
+/* ─── TOAST ─── */
+.toast{position:fixed;bottom:1.4rem;right:1.5rem;background:var(--bg4);border:1px solid var(--border2);border-radius:var(--rs);padding:8px 14px;font-size:0.77rem;color:var(--text);z-index:999;display:none;align-items:center;gap:8px;box-shadow:0 8px 28px rgba(0,0,0,0.5);animation:slideUp 0.2s ease}
+@keyframes slideUp{from{transform:translateY(8px);opacity:0}to{transform:translateY(0);opacity:1}}
+.toast svg{width:13px;height:13px;fill:none;stroke-width:2.5;flex-shrink:0}
+.toast.show{display:flex}
+.toast.t-ok svg{stroke:var(--green)}
+.toast.t-err svg{stroke:var(--red)}
+.toast.t-info svg{stroke:var(--blue)}
 
-  @media (max-width: 600px) {
-    .stats-grid { grid-template-columns: repeat(2, 1fr); }
-    .col-ssl { display: none; }
-    .col-domain { width: 50%; }
-  }
+/* ─── KEYBOARD SHORTCUT HINT ─── */
+.shortcut-hint{font-size:0.67rem;color:var(--text3);margin-top:6px;display:flex;gap:8px;flex-wrap:wrap}
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:840px){
+  .shell{flex-direction:column}
+  .sidebar{width:100%;height:auto;flex-direction:row;flex-wrap:wrap;gap:0.5rem;position:relative;padding:0.65rem}
+  .main{max-width:100%;padding:0.9rem}
+  .stats-row{grid-template-columns:repeat(2,1fr)}
+  .col-redirect,.col-time,.col-ip{display:none!important}
+  .sidebar-stats,.sidebar-footer{display:none}
+  .nav-section .nav-label{display:none}
+  .nav-section{flex-direction:row}
+  .nav-item{padding:5px 8px;font-size:0.75rem}
+}
 </style>
 </head>
 <body>
-<div class="page">
-  <header>
-    <div class="logo">
-      <div class="logo-icon">
-        <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-      </div>
-      <h1>Domain Checker</h1>
-    </div>
-    <p class="subtitle">Vérifiez la disponibilité et le certificat SSL de vos domaines</p>
-  </header>
+<div class="shell">
 
-  <div class="card">
-    <label class="input-label">Domaines à vérifier</label>
-    <textarea id="domains-input" placeholder="google.com&#10;github.com&#10;example.ma&#10;monsite.com&#10;..."></textarea>
+<!-- ═══════════════ SIDEBAR ═══════════════ -->
+<aside class="sidebar">
+  <div>
+    <div class="brand">
+      <div class="brand-icon"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+      <div><span class="brand-name">Domain Checker</span><span class="brand-badge">PRO</span></div>
+    </div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Outils</div>
+    <button class="nav-item active" id="nav-checker" onclick="showPanel('checker',this)">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>Vérificateur
+    </button>
+    <button class="nav-item" id="nav-summary" onclick="showPanel('summary',this)">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Statistiques
+    </button>
+    <button class="nav-item" id="nav-history" onclick="showPanel('history',this)">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Historique
+    </button>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Actions</div>
+    <button class="nav-item" onclick="openExportModal()">
+      <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Exporter
+    </button>
+    <button class="nav-item" onclick="openColModal()">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Colonnes
+    </button>
+    <button class="nav-item" onclick="clearAll()">
+      <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M9 6V4h6v2"/></svg>Effacer tout
+    </button>
+  </div>
+  <div class="sidebar-stats">
+    <div class="nav-label" style="padding:0;margin-bottom:2px">Session en cours</div>
+    <div class="sstat"><span class="sstat-label">Analysés</span><span class="sstat-val" style="color:var(--blue)" id="ss-done">0 / 0</span></div>
+    <div class="sstat"><span class="sstat-label">Contenu</span><span class="sstat-val" style="color:var(--green)" id="ss-content">0%</span></div>
+    <div class="sstat-bar"><div class="sstat-fill" style="background:var(--green)" id="sb-content"></div></div>
+    <div class="sstat"><span class="sstat-label">SSL valide</span><span class="sstat-val" style="color:var(--blue)" id="ss-ssl">0%</span></div>
+    <div class="sstat-bar"><div class="sstat-fill" style="background:var(--blue)" id="sb-ssl"></div></div>
+    <div class="sstat"><span class="sstat-label">Erreurs</span><span class="sstat-val" style="color:var(--red)" id="ss-fail">0%</span></div>
+    <div class="sstat-bar"><div class="sstat-fill" style="background:var(--red)" id="sb-fail"></div></div>
+  </div>
+  <div class="sidebar-footer">
+    Domain Checker Pro v3.0<br>
+    SSE Streaming · 15 concurrents · max 1000<br>
+    <a href="http://localhost:3000" target="_blank">localhost:3000</a>
+  </div>
+</aside>
+
+<!-- ═══════════════ MAIN ═══════════════ -->
+<main class="main">
+
+<!-- ══ PANEL: CHECKER ══ -->
+<div class="panel active" id="panel-checker">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Vérificateur de domaines</div>
+      <div class="page-sub">Contenu · SSL/HTTPS · Statut HTTP — streaming temps réel · jusqu'à 1000 domaines</div>
+    </div>
+  </div>
+
+  <div class="input-card">
+    <div class="input-header">
+      <span class="input-label">Domaines à vérifier</span>
+      <span class="input-hint">un par ligne · sans http:// <span class="domain-count-badge" id="domain-count">0 domaines</span></span>
+    </div>
+    <div class="input-row">
+      <textarea id="inp" placeholder="google.com&#10;github.com&#10;example.ma&#10;monsite.com&#10;..." oninput="countDomains()"></textarea>
+      <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-inp').click()" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropFile(event)">
+        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <strong style="font-size:0.71rem;color:inherit">Importer</strong>
+        <span style="font-size:0.64rem">.txt · .csv · .tsv</span>
+        <input type="file" id="file-inp" accept=".txt,.csv,.tsv" onchange="handleFile(event)">
+      </div>
+    </div>
+    <div class="shortcut-hint">
+      <span><kbd class="kbd">Ctrl+Enter</kbd> Lancer</span>
+      <span><kbd class="kbd">Escape</kbd> Arrêter</span>
+      <kbd class="kbd">Ctrl+E</kbd> Exporter
+    </div>
   </div>
 
   <div class="toolbar">
     <button class="btn btn-primary" id="check-btn" onclick="startCheck()">
-      <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-      Lancer la vérification
+      <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>Lancer la vérification
     </button>
-    <button class="btn" onclick="loadSample()">Exemples</button>
-    <button class="btn" onclick="clearAll()">Effacer</button>
-    <button class="btn export-right" id="export-btn" onclick="exportCSV()" style="display:none">
-      <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-      Exporter CSV
+    <button class="btn btn-danger" id="stop-btn" onclick="stopCheck()">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>Arrêter
+    </button>
+    <button class="btn" onclick="loadSample()">
+      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Exemples
+    </button>
+    <div class="sep"></div>
+    <button class="btn btn-export ml-auto" id="export-top-btn" onclick="openExportModal()" style="display:none">
+      <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Exporter les résultats
     </button>
   </div>
 
+  <!-- PROGRESS -->
   <div class="progress-wrap" id="progress-wrap">
-    <div class="progress-bar" id="progress-bar" style="width:0%"></div>
+    <div class="progress-row">
+      <div class="progress-label"><div class="dot" id="pdot"></div><span id="plabel">Connexion...</span></div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <span class="progress-pct" id="ppct">0%</span>
+        <span class="progress-count" id="pcount">0 / 0</span>
+      </div>
+    </div>
+    <div class="progress-track"><div class="progress-bar" id="pbar"></div></div>
+    <div class="progress-meta">
+      <div class="pmeta">✓ Contenu : <b id="pm-content">0</b></div>
+      <div class="pmeta">🔒 SSL : <b id="pm-ssl">0</b></div>
+      <div class="pmeta">✗ Erreurs : <b id="pm-fail">0</b></div>
+      <div class="pmeta">⚡ Vitesse : <b id="pm-speed">—</b>/s</div>
+      <div class="pmeta">⏱ Écoulé : <b id="pm-elapsed">0s</b></div>
+    </div>
   </div>
 
-  <div class="stats-grid" id="stats-grid">
-    <div class="stat s-blue"><div class="stat-val" id="s-total">0</div><div class="stat-label">Total</div></div>
-    <div class="stat s-green"><div class="stat-val" id="s-content">0</div><div class="stat-label">Avec contenu</div></div>
-    <div class="stat s-green"><div class="stat-val" id="s-ssl">0</div><div class="stat-label">SSL valide</div></div>
-    <div class="stat s-red"><div class="stat-val" id="s-fail">0</div><div class="stat-label">Inaccessibles</div></div>
+  <!-- STAT CARDS -->
+  <div class="stats-row" id="stats-row">
+    <div class="stat-card s-blue" onclick="filterByCard('all')" id="sc-all">
+      <div class="stat-val" id="s-total">0</div>
+      <div class="stat-label">Total vérifiés</div>
+      <div class="stat-pct" id="s-total-sub">—</div>
+    </div>
+    <div class="stat-card s-green" onclick="filterByCard('content')" id="sc-content">
+      <div class="stat-val" id="s-content">0</div>
+      <div class="stat-label">Avec contenu</div>
+      <div class="stat-pct" id="s-content-pct">—</div>
+    </div>
+    <div class="stat-card s-blue" onclick="filterByCard('ssl')" id="sc-ssl">
+      <div class="stat-val" id="s-ssl">0</div>
+      <div class="stat-label">SSL valide</div>
+      <div class="stat-pct" id="s-ssl-pct">—</div>
+    </div>
+    <div class="stat-card s-red" onclick="filterByCard('fail')" id="sc-fail">
+      <div class="stat-val" id="s-fail">0</div>
+      <div class="stat-label">Inaccessibles</div>
+      <div class="stat-pct" id="s-fail-pct">—</div>
+    </div>
   </div>
 
-  <div class="filters" id="filters">
-    <button class="filter-btn active" onclick="setFilter('all',this)">Tous</button>
-    <button class="filter-btn" onclick="setFilter('content',this)">Avec contenu</button>
-    <button class="filter-btn" onclick="setFilter('ssl',this)">SSL valide</button>
-    <button class="filter-btn" onclick="setFilter('no-ssl',this)">Sans SSL</button>
-    <button class="filter-btn" onclick="setFilter('fail',this)">Inaccessibles</button>
+  <!-- QUICK FILTER BAR -->
+  <div class="quick-filter-bar" id="quick-filter-bar">
+    <div class="chip-group">
+      <button class="chip active" onclick="setFilter('all',this)" id="chip-all">Tous</button>
+      <button class="chip c-green" onclick="setFilter('content',this)" id="chip-content">✓ Contenu</button>
+      <button class="chip c-green" onclick="setFilter('ssl',this)" id="chip-ssl">🔒 SSL valide</button>
+      <button class="chip c-amber" onclick="setFilter('no-ssl',this)" id="chip-nossl">⚠ Sans SSL</button>
+      <button class="chip c-red" onclick="setFilter('fail',this)" id="chip-fail">✗ Erreur</button>
+      <button class="chip" onclick="setFilter('redirect',this)" id="chip-redir">↪ Redirige</button>
+      <button class="chip" onclick="setFilter('no-content',this)" id="chip-nocontent">⊘ Sans contenu</button>
+    </div>
+    <div class="filter-sep"></div>
+    <button class="filter-toggle-btn" id="adv-toggle-btn" onclick="toggleAdvFilter()">
+      <svg viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+      Filtres avancés <span class="filter-active-count" id="adv-count" style="display:none">0</span>
+    </button>
+    <div class="search-wrap">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" id="search-inp" placeholder="Rechercher un domaine..." oninput="scheduleRender()">
+    </div>
   </div>
 
+  <!-- ADVANCED FILTER PANEL -->
+  <div class="filter-panel" id="adv-filter-panel">
+    <div class="filter-panel-body">
+      <div class="filter-row-adv">
+        <span class="filter-row-label">Statut HTTP</span>
+        <div class="chip-group" id="http-chips">
+          <button class="chip c-green active" onclick="toggleHttpFilter('2xx',this)">2xx OK</button>
+          <button class="chip c-blue active" onclick="toggleHttpFilter('3xx',this)">3xx Redirect</button>
+          <button class="chip c-amber active" onclick="toggleHttpFilter('4xx',this)">4xx Client</button>
+          <button class="chip c-red active" onclick="toggleHttpFilter('5xx',this)">5xx Serveur</button>
+          <button class="chip c-red active" onclick="toggleHttpFilter('err',this)">✗ Timeout</button>
+        </div>
+      </div>
+      <div class="filter-row-adv">
+        <span class="filter-row-label">Temps réponse</span>
+        <div class="chip-group" id="speed-chips">
+          <button class="chip c-green active" onclick="toggleSpeedFilter('fast',this)">⚡ &lt; 500ms</button>
+          <button class="chip active" onclick="toggleSpeedFilter('med',this)">⏱ 500ms–2s</button>
+          <button class="chip c-amber active" onclick="toggleSpeedFilter('slow',this)">🐢 2s–5s</button>
+          <button class="chip c-red active" onclick="toggleSpeedFilter('vslow',this)">💤 &gt; 5s</button>
+        </div>
+      </div>
+      <div class="filter-row-adv">
+        <span class="filter-row-label">Type SSL</span>
+        <div class="chip-group" id="ssl-chips">
+          <button class="chip c-green active" onclick="toggleSSLFilter('valid',this)">🔒 HTTPS</button>
+          <button class="chip c-amber active" onclick="toggleSSLFilter('redirect',this)">↪ Redirect HTTPS</button>
+          <button class="chip c-red active" onclick="toggleSSLFilter('none',this)">🔓 HTTP only</button>
+        </div>
+      </div>
+      <div class="filter-row-adv">
+        <span class="filter-row-label">Contenu</span>
+        <div class="chip-group" id="content-chips">
+          <button class="chip c-green active" onclick="toggleContentFilter('yes',this)">✓ Avec contenu</button>
+          <button class="chip active" onclick="toggleContentFilter('no',this)">⊘ Vide / Erreur</button>
+        </div>
+        <button class="filter-reset" onclick="resetAdvFilters()">↺ Réinitialiser les filtres</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABLE -->
   <div class="table-wrap" id="table-wrap">
+    <div class="table-header">
+      <span class="table-count" id="table-count">—</span>
+      <button class="col-sel-btn" onclick="openColModal()">⊞ Colonnes</button>
+    </div>
     <table>
-      <thead>
-        <tr>
-          <th class="col-domain">Domaine</th>
-          <th class="col-content">Contenu</th>
-          <th class="col-ssl">SSL / HTTPS</th>
-          <th class="col-status">HTTP</th>
-        </tr>
-      </thead>
+      <thead><tr>
+        <th class="col-n nosort">#</th>
+        <th class="col-domain" onclick="sortBy('domain')">Domaine <i class="sort-icon" id="sort-domain">↕</i></th>
+        <th class="col-content" onclick="sortBy('content')">Contenu <i class="sort-icon" id="sort-content">↕</i></th>
+        <th class="col-ssl" onclick="sortBy('ssl')">SSL / HTTPS <i class="sort-icon" id="sort-ssl">↕</i></th>
+        <th class="col-http" onclick="sortBy('http')">HTTP <i class="sort-icon" id="sort-http">↕</i></th>
+        <th class="col-redirect nosort" id="th-redirect">Redirection</th>
+        <th class="col-time" onclick="sortBy('time')" id="th-time">Durée <i class="sort-icon" id="sort-time">↕</i></th>
+      </tr></thead>
       <tbody id="results-body"></tbody>
     </table>
-    <div class="empty" id="empty-msg" style="display:none">Aucun résultat pour ce filtre.</div>
-  </div>
-
-  <div class="mode-note" id="mode-note">
-    <strong>Mode :</strong> Vérification via le serveur Node.js local (<code>localhost:3000</code>). Assurez-vous que <code>server.js</code> tourne.
+    <div class="empty-state" id="empty-msg" style="display:none">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <p>Aucun résultat pour ces filtres</p>
+    </div>
+    <div class="pagination">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="page-info" id="page-info">—</span>
+        <select class="page-size-sel" id="page-size" onchange="changePageSize()">
+          <option value="25">25 / page</option>
+          <option value="50" selected>50 / page</option>
+          <option value="100">100 / page</option>
+          <option value="250">250 / page</option>
+          <option value="0">Tout afficher</option>
+        </select>
+      </div>
+      <div class="page-btns" id="page-btns"></div>
+    </div>
   </div>
 </div>
 
-<script>
-let allResults = [];
-let currentFilter = 'all';
-const API = '';
-
-const icons = {
-  check: `<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>`,
-  x: `<svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`,
-  lock: `<svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`,
-  unlock: `<svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>`,
-  world: `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`,
-  loader: `<svg viewBox="0 0 24 24"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg>`,
-  wifi: `<svg viewBox="0 0 24 24"><line x1="1" y1="1" x2="23" y2="23"/><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/><path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/><path d="M10.71 5.05A16 16 0 0 1 22.56 9"/><path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>`
-};
-
-function loadSample() {
-  document.getElementById('domains-input').value =
-    'google.com\ngithub.com\nstackoverflow.com\nexample.com\nwikipedia.org\nexpired.badssl.com\nself-signed.badssl.com\nnonexistentdomain99999.xyz';
-}
-
-function clearAll() {
-  document.getElementById('domains-input').value = '';
-  allResults = [];
-  document.getElementById('results-body').innerHTML = '';
-  ['table-wrap','stats-grid','filters','progress-wrap'].forEach(id => {
-    document.getElementById(id).style.display = 'none';
-  });
-  document.getElementById('export-btn').style.display = 'none';
-  document.getElementById('progress-bar').style.width = '0%';
-}
-
-function setFilter(f, btn) {
-  currentFilter = f;
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  renderTable();
-}
-
-function badge(cls, icon, label) {
-  return `<span class="badge ${cls}">${icons[icon]}${label}</span>`;
-}
-
-function rowHTML(r) {
-  const pending = r.status === 'pending';
-  const contentB = pending ? badge('b-gray','loader','...') :
-    r.hasContent ? badge('b-green','check','Oui') : badge('b-red','x','Non');
-
-  const sslB = pending ? badge('b-gray','loader','...') :
-    r.ssl === 'valid' ? badge('b-green','lock','HTTPS valide') :
-    r.ssl === 'redirect-https' ? badge('b-amber','lock','Redirige HTTPS') :
-    badge('b-red','unlock','Absent');
-
-  const httpB = pending ? badge('b-gray','loader','...') :
-    r.error ? badge('b-red','wifi','Inaccessible') :
-    r.httpStatus >= 200 && r.httpStatus < 400 ? badge('b-green','check', r.httpStatus) :
-    badge('b-amber','x', r.httpStatus || '?');
-
-  return `<tr>
-    <td class="col-domain">
-      <div class="domain-cell">
-        <div class="domain-icon">${icons.world}</div>
-        <span class="domain-name">${r.domain}</span>
+<!-- ══ PANEL: SUMMARY ══ -->
+<div class="panel" id="panel-summary">
+  <div class="page-title" style="margin-bottom:1.25rem">Statistiques &amp; Résumé</div>
+  <div id="summary-empty" style="color:var(--text3);font-size:0.875rem;padding:2rem 0">Lancez une vérification pour voir les statistiques.</div>
+  <div id="summary-content" style="display:none">
+    <div class="chart-card">
+      <div class="chart-title">Répartition SSL / HTTPS</div>
+      <div class="donut-row">
+        <div class="donut-wrap"><canvas id="donut-ssl" width="100" height="100"></canvas><div class="donut-legend" id="legend-ssl"></div></div>
+        <div class="donut-wrap"><canvas id="donut-content" width="100" height="100"></canvas><div class="donut-legend" id="legend-content"></div></div>
       </div>
-    </td>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Codes HTTP</div>
+      <div class="bar-chart" id="bar-http"></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Vitesse de réponse</div>
+      <div class="bar-chart" id="bar-speed"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PANEL: HISTORY ══ -->
+<div class="panel" id="panel-history">
+  <div class="page-title" style="margin-bottom:1.25rem">Historique des sessions</div>
+  <div id="history-list" style="display:flex;flex-direction:column;gap:7px"></div>
+  <div id="history-empty" style="color:var(--text3);font-size:0.875rem;padding:2rem 0">Aucun historique pour le moment.</div>
+</div>
+
+</main>
+</div>
+
+<!-- ═══ EXPORT MODAL ═══ -->
+<div class="modal-overlay" id="export-modal" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="modal">
+    <div class="modal-title">Exporter les résultats</div>
+    <div class="modal-sub">Choisissez le format — Excel et TSV ont des colonnes séparées</div>
+    <div class="modal-section-lbl">Format</div>
+    <div class="modal-opts">
+      <div class="export-opt selected" id="opt-xlsx" onclick="selectExport('xlsx')">
+        <div class="export-opt-ico">📊</div>
+        <div><div class="export-opt-name">Excel (.xlsx)</div><div class="export-opt-desc">Colonnes séparées + couleurs par statut — Excel, Sheets, LibreOffice</div></div>
+      </div>
+      <div class="export-opt" id="opt-tsv" onclick="selectExport('tsv')">
+        <div class="export-opt-ico">📋</div>
+        <div><div class="export-opt-name">TSV — Tabulation</div><div class="export-opt-desc">Colonnes par tabulation — colle directement dans un tableur</div></div>
+      </div>
+      <div class="export-opt" id="opt-csv" onclick="selectExport('csv')">
+        <div class="export-opt-ico">📄</div>
+        <div><div class="export-opt-name">CSV — Virgule</div><div class="export-opt-desc">Format universel, compatible avec tout logiciel</div></div>
+      </div>
+    </div>
+    <div class="modal-section-lbl">Données</div>
+    <div class="export-scope">
+      <button class="chip active" id="scope-all" onclick="selectScope('all',this)">Tous les résultats</button>
+      <button class="chip" id="scope-filtered" onclick="selectScope('filtered',this)">Vue filtrée (<span id="scope-count">0</span>)</button>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="document.getElementById('export-modal').classList.remove('open')">Annuler</button>
+      <button class="btn btn-primary" onclick="doExport()">
+        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Télécharger
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ COLUMNS MODAL ═══ -->
+<div class="modal-overlay" id="col-modal" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="modal">
+    <div class="modal-title">Gérer les colonnes</div>
+    <div class="modal-sub">Activez ou désactivez les colonnes à afficher dans le tableau</div>
+    <div class="modal-opts" id="col-opts"></div>
+    <div class="modal-footer">
+      <button class="btn" onclick="document.getElementById('col-modal').classList.remove('open')">Fermer</button>
+      <button class="btn btn-primary" onclick="applyColumns();document.getElementById('col-modal').classList.remove('open');toast('✓ Colonnes appliquées','ok')">Appliquer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ TOAST ═══ -->
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24" id="toast-icon"><polyline points="20 6 9 17 4 12"/></svg>
+  <span id="toast-msg"></span>
+</div>
+
+<script>
+// ══ STATE ══
+let allResults=[],currentFilter='all',currentSort={col:null,dir:1};
+let currentPage=1,pageSize=50,currentESS=null;
+let statContent=0,statSSL=0,statFail=0,checkStart=0;
+let exportFormat='xlsx',exportScope='all';
+let sessionHistory=[];
+let advFilterOpen=false;
+// Advanced filter state — all enabled by default
+let httpFilters=new Set(['2xx','3xx','4xx','5xx','err']);
+let speedFilters=new Set(['fast','med','slow','vslow']);
+let sslFilters=new Set(['valid','redirect','none']);
+let contentFilters=new Set(['yes','no']);
+// Column visibility
+let colVisible={redirect:true,time:true};
+let pendingCols={...colVisible};
+
+try{sessionHistory=JSON.parse(localStorage.getItem('dc_history')||'[]');}catch(e){}
+try{const sv=JSON.parse(localStorage.getItem('dc_cols')||'{}');Object.assign(colVisible,sv);Object.assign(pendingCols,sv);}catch(e){}
+
+// ══ ICONS ══
+const I={
+  check:`<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>`,
+  x:`<svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`,
+  lock:`<svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`,
+  unlock:`<svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>`,
+  world:`<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`,
+  wifi:`<svg viewBox="0 0 24 24"><line x1="1" y1="1" x2="23" y2="23"/><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/><path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>`,
+  redir:`<svg viewBox="0 0 24 24"><polyline points="15 10 20 15 15 20"/><path d="M4 4v7a4 4 0 0 0 4 4h12"/></svg>`
+};
+function badge(cls,icon,lbl){return`<span class="badge ${cls}">${I[icon]}${lbl}</span>`;}
+
+// ══ KEYBOARD SHORTCUTS ══
+document.addEventListener('keydown',e=>{
+  if(e.ctrlKey&&e.key==='Enter'){e.preventDefault();startCheck();}
+  if(e.key==='Escape'&&currentESS){e.preventDefault();stopCheck();}
+  if(e.ctrlKey&&e.key==='e'){e.preventDefault();openExportModal();}
+});
+
+// ══ PANELS ══
+function showPanel(id,btn){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  btn.classList.add('active');
+  if(id==='summary')renderSummary();
+  if(id==='history')renderHistory();
+}
+
+// ══ DOMAIN COUNT ══
+function countDomains(){
+  const v=document.getElementById('inp').value.trim();
+  const n=v?[...new Set(v.split('\n').map(d=>d.trim()).filter(d=>d.length>2&&d.includes('.')))].length:0;
+  document.getElementById('domain-count').textContent=`${n} domaine${n!==1?'s':''}`;
+}
+
+// ══ FILE IMPORT ══
+function dragOver(e){e.preventDefault();document.getElementById('drop-zone').classList.add('over');}
+function dragLeave(){document.getElementById('drop-zone').classList.remove('over');}
+function dropFile(e){e.preventDefault();dragLeave();const f=e.dataTransfer.files[0];if(f)readFile(f);}
+function handleFile(e){if(e.target.files[0])readFile(e.target.files[0]);}
+function readFile(f){
+  const r=new FileReader();
+  r.onload=ev=>{
+    const lines=ev.target.result.split(/\r?\n/)
+      .map(l=>l.trim().split(/[\t,;]/)[0].trim().replace(/^https?:\/\//,'').replace(/\/.*/,'').toLowerCase())
+      .filter(l=>l.length>2&&l.includes('.'));
+    const unique=[...new Set(lines)];
+    document.getElementById('inp').value=unique.join('\n');
+    countDomains();
+    toast(`${unique.length} domaines importés depuis ${f.name}`,'ok');
+  };
+  r.readAsText(f);
+}
+
+// ══ SAMPLE ══
+function loadSample(){
+  document.getElementById('inp').value='google.com\ngithub.com\nstackoverflow.com\nexample.com\nwikipedia.org\nexpired.badssl.com\nself-signed.badssl.com\nnonexistentdomain99999.xyz\nhttpbin.org\ncloudflare.com\nanthropic.com\nopenai.com';
+  countDomains();
+}
+
+// ══ CLEAR ══
+function clearAll(){
+  if(currentESS){currentESS.abort();currentESS=null;}
+  document.getElementById('inp').value=''; countDomains();
+  allResults=[];statContent=0;statSSL=0;statFail=0;currentPage=1;
+  document.getElementById('results-body').innerHTML='';
+  ['table-wrap','stats-row','quick-filter-bar','progress-wrap','export-top-btn','adv-filter-panel'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.style.display='none';
+  });
+  document.getElementById('stop-btn').style.display='none';
+  document.getElementById('check-btn').disabled=false;
+  document.getElementById('check-btn').innerHTML=`<svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><polygon points="5 3 19 12 5 21 5 3"/></svg> Lancer la vérification`;
+  advFilterOpen=false;
+  document.getElementById('adv-toggle-btn')?.classList.remove('open');
+  updateSidebarStats(0,0);
+}
+
+// ══ STOP ══
+function stopCheck(){
+  if(currentESS){currentESS.abort();currentESS=null;}
+  document.getElementById('stop-btn').style.display='none';
+  document.getElementById('check-btn').disabled=false;
+  document.getElementById('check-btn').innerHTML=`▶ Relancer`;
+  document.getElementById('plabel').textContent='Arrêté par l\'utilisateur.';
+  document.getElementById('pdot').style.display='none';
+  document.getElementById('pbar').classList.add('done');
+}
+
+// ══ ADVANCED FILTERS ══
+function toggleAdvFilter(){
+  advFilterOpen=!advFilterOpen;
+  const panel=document.getElementById('adv-filter-panel');
+  const btn=document.getElementById('adv-toggle-btn');
+  panel.style.display=advFilterOpen?'block':'none';
+  btn.classList.toggle('open',advFilterOpen);
+}
+function toggleHttpFilter(val,btn){
+  if(httpFilters.has(val))httpFilters.delete(val);else httpFilters.add(val);
+  btn.classList.toggle('active',httpFilters.has(val));
+  updateAdvCount();scheduleRender();
+}
+function toggleSpeedFilter(val,btn){
+  if(speedFilters.has(val))speedFilters.delete(val);else speedFilters.add(val);
+  btn.classList.toggle('active',speedFilters.has(val));
+  updateAdvCount();scheduleRender();
+}
+function toggleSSLFilter(val,btn){
+  if(sslFilters.has(val))sslFilters.delete(val);else sslFilters.add(val);
+  btn.classList.toggle('active',sslFilters.has(val));
+  updateAdvCount();scheduleRender();
+}
+function toggleContentFilter(val,btn){
+  if(contentFilters.has(val))contentFilters.delete(val);else contentFilters.add(val);
+  btn.classList.toggle('active',contentFilters.has(val));
+  updateAdvCount();scheduleRender();
+}
+function resetAdvFilters(){
+  httpFilters=new Set(['2xx','3xx','4xx','5xx','err']);
+  speedFilters=new Set(['fast','med','slow','vslow']);
+  sslFilters=new Set(['valid','redirect','none']);
+  contentFilters=new Set(['yes','no']);
+  document.querySelectorAll('#adv-filter-panel .chip').forEach(c=>c.classList.add('active'));
+  updateAdvCount();scheduleRender();
+  toast('Filtres réinitialisés','info');
+}
+function updateAdvCount(){
+  const allOn=httpFilters.size===5&&speedFilters.size===4&&sslFilters.size===3&&contentFilters.size===2;
+  const countEl=document.getElementById('adv-count');
+  const active=(!allOn)?((5-httpFilters.size)+(4-speedFilters.size)+(3-sslFilters.size)+(2-contentFilters.size)):0;
+  countEl.textContent=active;
+  countEl.style.display=active>0?'inline':'none';
+}
+function applyAdvFilter(r){
+  // HTTP filter
+  if(r.error){if(!httpFilters.has('err'))return false;}
+  else if(r.httpStatus){
+    const g=r.httpStatus<300?'2xx':r.httpStatus<400?'3xx':r.httpStatus<500?'4xx':'5xx';
+    if(!httpFilters.has(g))return false;
+  }
+  // Speed filter
+  if(r.elapsed){
+    const sp=r.elapsed<500?'fast':r.elapsed<2000?'med':r.elapsed<5000?'slow':'vslow';
+    if(!speedFilters.has(sp))return false;
+  }
+  // SSL filter
+  const sslKey=r.ssl==='valid'?'valid':r.ssl==='redirect-https'?'redirect':'none';
+  if(!sslFilters.has(sslKey))return false;
+  // Content filter
+  const ck=r.hasContent?'yes':'no';
+  if(!contentFilters.has(ck))return false;
+  return true;
+}
+
+// ══ COLUMNS MODAL ══
+const COL_DEFS=[
+  {id:'redirect',label:'Redirection',desc:'URL de redirection si applicable',icon:'↪'},
+  {id:'time',label:'Durée',desc:'Temps de réponse en millisecondes',icon:'⏱'},
+];
+function openColModal(){
+  pendingCols={...colVisible};
+  const opts=document.getElementById('col-opts');
+  opts.innerHTML=COL_DEFS.map(c=>`
+    <div class="col-toggle-item ${pendingCols[c.id]!==false?'enabled':''}" id="ct-${c.id}" onclick="toggleCol('${c.id}')">
+      <div class="toggle-ico">${c.icon}</div>
+      <div><div class="toggle-name">${c.label}</div><div class="toggle-desc">${c.desc}</div></div>
+      <div class="toggle-check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+    </div>`).join('');
+  document.getElementById('col-modal').classList.add('open');
+}
+function toggleCol(id){
+  pendingCols[id]=pendingCols[id]===false?true:false;
+  const el=document.getElementById('ct-'+id);
+  el.classList.toggle('enabled',pendingCols[id]!==false);
+}
+function applyColumns(){
+  Object.assign(colVisible,pendingCols);
+  try{localStorage.setItem('dc_cols',JSON.stringify(colVisible));}catch(e){}
+  // Show/hide columns
+  const cols=['redirect','time'];
+  cols.forEach(c=>{
+    document.querySelectorAll(`.col-${c}`).forEach(el=>el.classList.toggle('col-hidden',colVisible[c]===false));
+    const th=document.getElementById('th-'+c);
+    if(th)th.classList.toggle('col-hidden',colVisible[c]===false);
+  });
+  scheduleRender();
+}
+
+// ══ CHECK ══
+async function startCheck(){
+  const raw=document.getElementById('inp').value.trim();if(!raw)return;
+  const domains=[...new Set(raw.split('\n').map(d=>d.trim().replace(/^https?:\/\//,'').replace(/\/.*/,'').replace(/\s.*/,'').toLowerCase()).filter(d=>d.length>2&&d.includes('.')))];
+  if(!domains.length)return;
+  if(currentESS){currentESS.abort();currentESS=null;}
+  allResults=[];statContent=0;statSSL=0;statFail=0;currentPage=1;
+  checkStart=Date.now();
+  const btn=document.getElementById('check-btn');
+  btn.disabled=true;btn.innerHTML=`⏳ En cours...`;
+  document.getElementById('stop-btn').style.display='inline-flex';
+  document.getElementById('export-top-btn').style.display='none';
+  ['table-wrap','stats-row','quick-filter-bar','progress-wrap'].forEach(id=>{
+    const el=document.getElementById(id);if(!el)return;
+    el.style.display=id==='stats-row'?'grid':id==='quick-filter-bar'?'flex':'block';
+  });
+  // Apply saved column visibility
+  applyColumns();
+  document.getElementById('plabel').textContent='Connexion au serveur...';
+  document.getElementById('pdot').style.display='';
+  document.getElementById('pbar').classList.remove('done');
+  updateStats(0,domains.length);
+  const controller=new AbortController();currentESS=controller;
+  let elapsedTimer=setInterval(()=>{
+    const s=((Date.now()-checkStart)/1000).toFixed(1);
+    document.getElementById('pm-elapsed').textContent=s+'s';
+  },500);
+  try{
+    const resp=await fetch('/stream',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({domains}),signal:controller.signal});
+    if(!resp.ok)throw new Error('Server error');
+    const reader=resp.body.getReader(),decoder=new TextDecoder();
+    let buffer='',total=domains.length,done=0;
+    document.getElementById('plabel').textContent='Vérification en cours...';
+    while(true){
+      const{value,done:sd}=await reader.read();if(sd)break;
+      buffer+=decoder.decode(value,{stream:true});
+      const lines=buffer.split('\n');buffer=lines.pop();
+      for(const line of lines){
+        if(!line.startsWith('data: '))continue;
+        try{
+          const msg=JSON.parse(line.slice(6));
+          if(msg.type==='start'){total=msg.total;updateStats(0,total);}
+          else if(msg.type==='result'){
+            done=msg.done;
+            const r={...msg.result,done:true};
+            allResults.push(r);
+            if(r.hasContent)statContent++;
+            if(r.ssl==='valid')statSSL++;
+            if(r.error)statFail++;
+            updateStats(done,total);
+            scheduleRender();
+          }else if(msg.type==='done'){finishCheck(total);}
+        }catch(e){}
+      }
+    }
+  }catch(e){
+    if(e.name!=='AbortError'){
+      document.getElementById('plabel').innerHTML=`<span style="color:var(--red)">⚠ Serveur inaccessible — lancez <code>node server.js</code></span>`;
+      document.getElementById('pdot').style.display='none';
+    }
+  }
+  clearInterval(elapsedTimer);
+  renderTable();
+  btn.disabled=false;btn.innerHTML=`▶ Relancer`;
+  document.getElementById('stop-btn').style.display='none';
+  currentESS=null;
+}
+
+function finishCheck(total){
+  const elapsed=((Date.now()-checkStart)/1000).toFixed(1);
+  document.getElementById('plabel').textContent=`✓ Terminé — ${total} domaines en ${elapsed}s`;
+  document.getElementById('pbar').style.width='100%';
+  document.getElementById('pbar').classList.add('done');
+  document.getElementById('pdot').style.display='none';
+  document.getElementById('export-top-btn').style.display='inline-flex';
+  sessionHistory.unshift({date:new Date().toLocaleString('fr'),total,content:statContent,ssl:statSSL,fail:statFail,elapsed});
+  if(sessionHistory.length>25)sessionHistory.pop();
+  try{localStorage.setItem('dc_history',JSON.stringify(sessionHistory));}catch(e){}
+  toast(`✓ ${total} domaines vérifiés en ${elapsed}s`,'ok');
+}
+
+// ══ STATS ══
+function updateStats(done,total){
+  document.getElementById('s-total').textContent=done;
+  document.getElementById('s-total-sub').textContent=`sur ${total}`;
+  document.getElementById('s-content').textContent=statContent;
+  document.getElementById('s-ssl').textContent=statSSL;
+  document.getElementById('s-fail').textContent=statFail;
+  const pct=n=>total>0?Math.round((n/total)*100):0;
+  document.getElementById('s-content-pct').textContent=`${pct(statContent)}% des domaines`;
+  document.getElementById('s-ssl-pct').textContent=`${pct(statSSL)}% des domaines`;
+  document.getElementById('s-fail-pct').textContent=`${pct(statFail)}% des domaines`;
+  const p=total>0?Math.round((done/total)*100):0;
+  document.getElementById('pbar').style.width=p+'%';
+  document.getElementById('pcount').textContent=`${done} / ${total}`;
+  document.getElementById('ppct').textContent=p+'%';
+  document.getElementById('pm-content').textContent=statContent;
+  document.getElementById('pm-ssl').textContent=statSSL;
+  document.getElementById('pm-fail').textContent=statFail;
+  const el2=(Date.now()-checkStart)/1000;
+  document.getElementById('pm-speed').textContent=el2>0?(done/el2).toFixed(1):'—';
+  updateSidebarStats(done,total);
+}
+function updateSidebarStats(done,total){
+  document.getElementById('ss-done').textContent=`${done} / ${total}`;
+  const pct=n=>total>0?Math.round((n/total)*100):0;
+  document.getElementById('ss-content').textContent=pct(statContent)+'%';
+  document.getElementById('sb-content').style.width=pct(statContent)+'%';
+  document.getElementById('ss-ssl').textContent=pct(statSSL)+'%';
+  document.getElementById('sb-ssl').style.width=pct(statSSL)+'%';
+  document.getElementById('ss-fail').textContent=pct(statFail)+'%';
+  document.getElementById('sb-fail').style.width=pct(statFail)+'%';
+}
+
+// ══ FILTERS ══
+function setFilter(f,btn){
+  currentFilter=f;currentPage=1;
+  document.querySelectorAll('.quick-filter-bar .chip').forEach(c=>c.classList.remove('active'));
+  btn.classList.add('active');
+  scheduleRender();
+}
+function filterByCard(f){
+  currentFilter=f;currentPage=1;
+  document.querySelectorAll('.quick-filter-bar .chip').forEach(c=>c.classList.remove('active'));
+  const map={all:'chip-all',content:'chip-content',ssl:'chip-ssl',fail:'chip-fail'};
+  if(map[f])document.getElementById(map[f])?.classList.add('active');
+  document.querySelectorAll('.stat-card').forEach(c=>c.classList.remove('selected'));
+  document.getElementById('sc-'+f)?.classList.add('selected');
+  scheduleRender();
+}
+
+// ══ SORT ══
+function sortBy(col){
+  if(currentSort.col===col)currentSort.dir*=-1;
+  else{currentSort.col=col;currentSort.dir=1;}
+  document.querySelectorAll('.sort-icon').forEach(el=>el.textContent='↕');
+  document.querySelectorAll('th').forEach(el=>el.classList.remove('sorted'));
+  const el=document.getElementById('sort-'+col);
+  if(el){el.textContent=currentSort.dir===1?'↑':'↓';el.closest('th').classList.add('sorted');}
+  currentPage=1;scheduleRender();
+}
+
+// ══ DATA ══
+function getFilteredData(){
+  const search=(document.getElementById('search-inp')?.value||'').toLowerCase();
+  let data=allResults.filter(r=>r.done);
+  // Quick filters
+  if(currentFilter==='content')data=data.filter(r=>r.hasContent);
+  else if(currentFilter==='ssl')data=data.filter(r=>r.ssl==='valid');
+  else if(currentFilter==='no-ssl')data=data.filter(r=>r.ssl==='none'&&!r.error);
+  else if(currentFilter==='fail')data=data.filter(r=>r.error);
+  else if(currentFilter==='redirect')data=data.filter(r=>r.redirectUrl);
+  else if(currentFilter==='no-content')data=data.filter(r=>!r.hasContent&&!r.error);
+  // Advanced filters
+  if(advFilterOpen)data=data.filter(applyAdvFilter);
+  // Search
+  if(search)data=data.filter(r=>r.domain.toLowerCase().includes(search)||(r.redirectUrl||'').toLowerCase().includes(search));
+  // Sort
+  if(currentSort.col){
+    data=[...data].sort((a,b)=>{
+      let va,vb;
+      if(currentSort.col==='domain'){va=a.domain;vb=b.domain;}
+      else if(currentSort.col==='content'){va=a.hasContent?1:0;vb=b.hasContent?1:0;}
+      else if(currentSort.col==='ssl'){va=a.ssl==='valid'?2:a.ssl==='redirect-https'?1:0;vb=b.ssl==='valid'?2:b.ssl==='redirect-https'?1:0;}
+      else if(currentSort.col==='http'){va=a.httpStatus||0;vb=b.httpStatus||0;}
+      else if(currentSort.col==='time'){va=a.elapsed||9999;vb=b.elapsed||9999;}
+      if(va<vb)return-1*currentSort.dir;if(va>vb)return 1*currentSort.dir;return 0;
+    });
+  }
+  return data;
+}
+
+// ══ RENDER ══
+let renderQueued=false;
+function scheduleRender(){if(!renderQueued){renderQueued=true;requestAnimationFrame(()=>{renderQueued=false;renderTable();});}}
+
+function rowHTML(r,idx){
+  const contentB=r.hasContent?badge('b-green','check','Oui'):badge('b-red','x','Non');
+  const sslB=r.ssl==='valid'?badge('b-green','lock','HTTPS'):
+    r.ssl==='redirect-https'?badge('b-amber','lock','↪ HTTPS'):
+    badge('b-red','unlock','Absent');
+  const httpB=r.error?badge('b-red','wifi','Erreur'):
+    r.httpStatus>=200&&r.httpStatus<300?badge('b-green','check',r.httpStatus):
+    r.httpStatus>=300&&r.httpStatus<400?badge('b-blue','redir',r.httpStatus):
+    badge('b-amber','x',r.httpStatus||'?');
+  const redB=r.redirectUrl?`<span class="redirect-url" title="${r.redirectUrl}">${r.redirectUrl.replace(/^https?:\/\//,'').substring(0,28)}…</span>`:`<span style="color:var(--text3);font-size:0.68rem">—</span>`;
+  const timeB=r.elapsed?`<span class="time-val${r.elapsed>3000?' c-red':r.elapsed>1000?' c-amber':''}">${r.elapsed}ms</span>`:`<span class="time-val">—</span>`;
+  const fav=`<img class="fav" src="https://www.google.com/s2/favicons?domain=${r.domain}&sz=16" onerror="this.style.display='none'" loading="lazy">`;
+  const copyBtn=`<span class="copy-cell" title="Copier" onclick="navigator.clipboard.writeText('${r.domain}');toast('Copié : ${r.domain}','info')">⧉</span>`;
+  return`<tr>
+    <td class="col-n"><span class="row-num">${idx}</span></td>
+    <td class="col-domain"><div class="domain-cell">${fav}<span class="domain-name" title="${r.domain}">${r.domain}</span>${copyBtn}</div></td>
     <td class="col-content">${contentB}</td>
     <td class="col-ssl">${sslB}</td>
-    <td class="col-status">${httpB}</td>
+    <td class="col-http">${httpB}</td>
+    <td class="col-redirect ${colVisible.redirect===false?'col-hidden':''}">${redB}</td>
+    <td class="col-time ${colVisible.time===false?'col-hidden':''}">${timeB}</td>
   </tr>`;
 }
 
-function renderTable() {
-  const body = document.getElementById('results-body');
-  const empty = document.getElementById('empty-msg');
-  let data = allResults;
-  if (currentFilter === 'content') data = allResults.filter(r => r.hasContent);
-  if (currentFilter === 'ssl') data = allResults.filter(r => r.ssl === 'valid');
-  if (currentFilter === 'no-ssl') data = allResults.filter(r => r.ssl === 'none' && !r.error);
-  if (currentFilter === 'fail') data = allResults.filter(r => r.error);
-  if (data.length === 0 && allResults.some(r => r.status !== 'pending')) {
-    body.innerHTML = '';
-    empty.style.display = 'block';
-  } else {
-    empty.style.display = 'none';
-    body.innerHTML = data.map(rowHTML).join('');
+function renderTable(){
+  const body=document.getElementById('results-body');
+  const empty=document.getElementById('empty-msg');
+  const countEl=document.getElementById('table-count');
+  const data=getFilteredData();
+  document.getElementById('scope-count').textContent=data.length;
+  if(data.length===0&&allResults.some(r=>r.done)){
+    body.innerHTML='';empty.style.display='block';
+    countEl.textContent='0 résultat';renderPagination(0);return;
   }
+  empty.style.display='none';
+  const ps=pageSize===0?data.length:pageSize;
+  const totalPages=ps>0?Math.ceil(data.length/ps):1;
+  if(currentPage>totalPages)currentPage=Math.max(1,totalPages);
+  const start=(currentPage-1)*ps;
+  const slice=pageSize===0?data:data.slice(start,start+ps);
+  body.innerHTML=slice.map((r,i)=>rowHTML(r,start+i+1)).join('');
+  countEl.textContent=`${data.length} résultat${data.length>1?'s':''}${data.length<allResults.filter(r=>r.done).length?' (filtré)':''}`;
+  renderPagination(totalPages);
+  document.getElementById('page-info').textContent=`Page ${currentPage} / ${totalPages||1}`;
 }
 
-function updateStats() {
-  const done = allResults.filter(r => r.status !== 'pending');
-  document.getElementById('s-total').textContent = allResults.length;
-  document.getElementById('s-content').textContent = done.filter(r => r.hasContent).length;
-  document.getElementById('s-ssl').textContent = done.filter(r => r.ssl === 'valid').length;
-  document.getElementById('s-fail').textContent = done.filter(r => r.error).length;
-}
-
-async function startCheck() {
-  const raw = document.getElementById('domains-input').value.trim();
-  if (!raw) return;
-  const domains = [...new Set(
-    raw.split('\n')
-      .map(d => d.trim().replace(/^https?:\/\//,'').replace(/\/.*/,'').toLowerCase())
-      .filter(d => d.length > 2 && d.includes('.'))
-  )];
-  if (!domains.length) return;
-
-  const btn = document.getElementById('check-btn');
-  btn.disabled = true;
-  btn.innerHTML = `${icons.loader} Vérification...`;
-
-  allResults = domains.map(d => ({ domain: d, hasContent: false, ssl: 'none', httpStatus: null, error: null, status: 'pending' }));
-
-  ['table-wrap','stats-grid','filters','progress-wrap'].forEach(id => {
-    document.getElementById(id).style.display = id === 'stats-grid' ? 'grid' : id === 'filters' ? 'flex' : 'block';
+function renderPagination(totalPages){
+  const el=document.getElementById('page-btns');
+  if(totalPages<=1){el.innerHTML='';return;}
+  let html=`<button class="page-btn" onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>`;
+  const pages=[];
+  for(let i=1;i<=totalPages;i++){
+    if(i===1||i===totalPages||(i>=currentPage-2&&i<=currentPage+2))pages.push(i);
+    else if(pages[pages.length-1]!=='…')pages.push('…');
+  }
+  pages.forEach(p=>{
+    if(p==='…')html+=`<button class="page-btn" disabled>…</button>`;
+    else html+=`<button class="page-btn ${p===currentPage?'active':''}" onclick="goPage(${p})">${p}</button>`;
   });
-  document.getElementById('export-btn').style.display = 'inline-flex';
-  renderTable(); updateStats();
+  html+=`<button class="page-btn" onclick="goPage(${currentPage+1})" ${currentPage===totalPages?'disabled':''}><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>`;
+  el.innerHTML=html;
+}
+function goPage(p){currentPage=p;renderTable();}
+function changePageSize(){pageSize=parseInt(document.getElementById('page-size').value);currentPage=1;renderTable();}
 
-  try {
-    const resp = await fetch('/check', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ domains })
-    });
-    const data = await resp.json();
-    if (data.results) {
-      data.results.forEach((r, i) => {
-        allResults[i] = { ...r, status: 'done' };
-      });
-      document.getElementById('progress-bar').style.width = '100%';
-    }
-  } catch (e) {
-    allResults.forEach(r => { r.status = 'done'; r.error = 'Server unreachable'; });
-    document.getElementById('mode-note').innerHTML = `<strong style="color:#f25c5c">⚠ Serveur inaccessible.</strong> Lancez <code>node server.js</code> puis rechargez la page.`;
+// ══ EXPORT MODAL ══
+function openExportModal(){
+  if(!allResults.some(r=>r.done)){toast('Aucun résultat à exporter','err');return;}
+  document.getElementById('scope-count').textContent=getFilteredData().length;
+  document.getElementById('export-modal').classList.add('open');
+}
+function selectExport(f){
+  exportFormat=f;
+  ['xlsx','tsv','csv'].forEach(fmt=>document.getElementById('opt-'+fmt).classList.remove('selected'));
+  document.getElementById('opt-'+f).classList.add('selected');
+}
+function selectScope(s,btn){
+  exportScope=s;
+  document.querySelectorAll('.export-scope .chip').forEach(c=>c.classList.remove('active'));
+  btn.classList.add('active');
+}
+function doExport(){
+  const data=exportScope==='filtered'?getFilteredData():allResults.filter(r=>r.done);
+  document.getElementById('export-modal').classList.remove('open');
+  if(exportFormat==='xlsx')exportXLSX(data);
+  else if(exportFormat==='tsv')exportTSV(data);
+  else exportCSV(data);
+  toast(`✓ ${exportFormat.toUpperCase()} exporté — ${data.length} lignes`,'ok');
+}
+
+// ══ EXPORT: XLSX avec couleurs par statut ══
+function exportXLSX(data){
+  const esc=v=>String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const s=v=>`<c t="inlineStr"><is><t>${esc(v)}</t></is></c>`;
+  const n=v=>`<c t="n"><v>${v}</v></c>`;
+  // Styles: 0=normal, 1=green, 2=red, 3=amber, 4=blue, 5=header
+  const styles=`<?xml version="1.0" encoding="UTF-8"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+    <fonts><font><sz val="10"/><name val="Calibri"/></font><font><b/><sz val="10"/><name val="Calibri"/></font></fonts>
+    <fills><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill>
+      <fill><patternFill patternType="solid"><fgColor rgb="FFD6F5E3"/></patternFill></fill>
+      <fill><patternFill patternType="solid"><fgColor rgb="FFFDE8E8"/></patternFill></fill>
+      <fill><patternFill patternType="solid"><fgColor rgb="FFFFF8E1"/></patternFill></fill>
+      <fill><patternFill patternType="solid"><fgColor rgb="FFE8F0FE"/></patternFill></fill>
+      <fill><patternFill patternType="solid"><fgColor rgb="FF1E2333"/></patternFill></fill>
+    </fills>
+    <borders><border><left/><right/><top/><bottom/><diagonal/></border></borders>
+    <cellStyleXfs><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>
+    <cellXfs>
+      <xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>
+      <xf numFmtId="0" fontId="0" fillId="2" borderId="0" xfId="0"/>
+      <xf numFmtId="0" fontId="0" fillId="3" borderId="0" xfId="0"/>
+      <xf numFmtId="0" fontId="0" fillId="4" borderId="0" xfId="0"/>
+      <xf numFmtId="0" fontId="0" fillId="5" borderId="0" xfId="0"/>
+      <xf numFmtId="0" fontId="1" fillId="6" borderId="0" xfId="0"/>
+    </cellXfs>
+  </styleSheet>`;
+  function sc(style,val,isNum=false){
+    if(isNum)return`<c s="${style}" t="n"><v>${val}</v></c>`;
+    return`<c s="${style}" t="inlineStr"><is><t>${esc(String(val))}</t></is></c>`;
   }
-
-  updateStats(); renderTable();
-  btn.disabled = false;
-  btn.innerHTML = `${icons.check} Relancer`;
+  const headers=['#','Domaine','Contenu','SSL / HTTPS','Statut HTTP','URL Redirection','Durée (ms)','Erreur'];
+  let rows=`<row>${headers.map(h=>sc(5,h)).join('')}</row>`;
+  data.forEach((r,i)=>{
+    const cSsl=r.ssl==='valid'?1:r.ssl==='redirect-https'?3:2;
+    const cContent=r.hasContent?1:2;
+    const cHttp=r.error?2:r.httpStatus<300?1:r.httpStatus<400?4:2;
+    const cErr=r.error?2:0;
+    rows+=`<row>
+      ${sc(0,i+1,true)}
+      ${sc(0,r.domain)}
+      ${sc(cContent,r.hasContent?'Oui':'Non')}
+      ${sc(cSsl,r.ssl==='valid'?'HTTPS valide':r.ssl==='redirect-https'?'Redirige HTTPS':'Absent')}
+      ${r.httpStatus?sc(cHttp,r.httpStatus,true):sc(cErr,'')}
+      ${sc(0,r.redirectUrl||'')}
+      ${r.elapsed?sc(0,r.elapsed,true):sc(0,'')}
+      ${sc(cErr,r.error||'')}
+    </row>`;
+  });
+  const colWidths=`<cols><col min="1" max="1" width="5" customWidth="1"/><col min="2" max="2" width="30" customWidth="1"/><col min="3" max="3" width="12" customWidth="1"/><col min="4" max="4" width="16" customWidth="1"/><col min="5" max="5" width="12" customWidth="1"/><col min="6" max="6" width="35" customWidth="1"/><col min="7" max="7" width="12" customWidth="1"/><col min="8" max="8" width="20" customWidth="1"/></cols>`;
+  const sheet=`<?xml version="1.0" encoding="UTF-8"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetViews><sheetView tabSelected="1" workbookViewId="0"><selection activeCell="A1"/></sheetView></sheetViews>${colWidths}<sheetData>${rows}</sheetData><sheetFormatPr defaultRowHeight="16"/></worksheet>`;
+  const wb=`<?xml version="1.0" encoding="UTF-8"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Résultats" sheetId="1" r:id="rId1"/></sheets></workbook>`;
+  const rels=`<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/></Relationships>`;
+  const ct=`<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>`;
+  downloadBlob(buildZip(ct,rels,wb,sheet,styles),`domains_${fdate()}.xlsx`);
 }
 
-function exportCSV() {
-  const rows = [['Domaine','Contenu','SSL','HTTP Status','Erreur']];
-  allResults.forEach(r => rows.push([
-    r.domain,
-    r.hasContent ? 'Oui' : 'Non',
-    r.ssl === 'valid' ? 'Valide' : r.ssl === 'redirect-https' ? 'Redirige HTTPS' : 'Absent',
-    r.httpStatus || '',
-    r.error || ''
-  ]));
-  const csv = rows.map(r => r.map(c => `"${c}"`).join(',')).join('\n');
-  const a = document.createElement('a');
-  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
-  a.download = `domains_${new Date().toISOString().slice(0,10)}.csv`;
-  a.click();
+function buildZip(ct,rels,wb,ws,styles){
+  const enc=s=>new TextEncoder().encode(s);
+  function crc32(b){let c=0xFFFFFFFF,t=new Uint32Array(256);for(let i=0;i<256;i++){let k=i;for(let j=0;j<8;j++)k=(k&1)?0xEDB88320^(k>>>1):k>>>1;t[i]=k;}for(let i=0;i<b.length;i++)c=t[(c^b[i])&0xFF]^(c>>>8);return(c^0xFFFFFFFF)>>>0;}
+  function u16(n){const b=new Uint8Array(2);new DataView(b.buffer).setUint16(0,n,true);return b;}
+  function u32(n){const b=new Uint8Array(4);new DataView(b.buffer).setUint32(0,n,true);return b;}
+  function cat(...a){const t=a.reduce((s,x)=>s+x.length,0),r=new Uint8Array(t);let o=0;a.forEach(x=>{r.set(x,o);o+=x.length;});return r;}
+  const files=[
+    ['[Content_Types].xml',enc(ct)],
+    ['_rels/.rels',enc(`<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`)],
+    ['xl/workbook.xml',enc(wb)],
+    ['xl/_rels/workbook.xml.rels',enc(rels)],
+    ['xl/worksheets/sheet1.xml',enc(ws)],
+    ['xl/styles.xml',enc(styles)]
+  ];
+  const locals=[],centrals=[];let offset=0;
+  for(const[name,data]of files){
+    const nb=enc(name),crc=crc32(data);
+    const local=cat(new Uint8Array([0x50,0x4B,0x03,0x04,0x14,0,0,0,0,0,0,0,0,0]),u32(crc),u32(data.length),u32(data.length),u16(nb.length),u16(0),nb,data);
+    const central=cat(new Uint8Array([0x50,0x4B,0x01,0x02,0x14,0,0x14,0,0,0,0,0,0,0,0,0]),u32(crc),u32(data.length),u32(data.length),u16(nb.length),u16(0),u16(0),u16(0),u16(0),u32(0),u32(offset),nb);
+    locals.push(local);centrals.push(central);offset+=local.length;
+  }
+  const cd=cat(...centrals);
+  const eocd=cat(new Uint8Array([0x50,0x4B,0x05,0x06,0,0,0,0]),u16(files.length),u16(files.length),u32(cd.length),u32(offset),u16(0));
+  return new Blob([cat(...locals,cd,eocd)],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
 }
+
+// ══ EXPORT: TSV ══
+function exportTSV(data){
+  const headers=['#','Domaine','Contenu','SSL/HTTPS','Statut HTTP','URL Redirection','Durée (ms)','Erreur'];
+  const rows=data.map((r,i)=>[
+    i+1,r.domain,
+    r.hasContent?'Oui':'Non',
+    r.ssl==='valid'?'HTTPS valide':r.ssl==='redirect-https'?'Redirige HTTPS':'Absent',
+    r.httpStatus||'',r.redirectUrl||'',r.elapsed||'',r.error||''
+  ].join('\t'));
+  downloadText([headers.join('\t'),...rows].join('\r\n'),`domains_${fdate()}.tsv`,'text/tab-separated-values;charset=utf-8');
+}
+
+// ══ EXPORT: CSV ══
+function exportCSV(data){
+  const headers=['#','Domaine','Contenu','SSL/HTTPS','Statut HTTP','URL Redirection','Durée (ms)','Erreur'];
+  const rows=data.map((r,i)=>[
+    i+1,r.domain,
+    r.hasContent?'Oui':'Non',
+    r.ssl==='valid'?'HTTPS valide':r.ssl==='redirect-https'?'Redirige HTTPS':'Absent',
+    r.httpStatus||'',r.redirectUrl||'',r.elapsed||'',r.error||''
+  ].map(c=>`"${String(c).replace(/"/g,'""')}"`).join(','));
+  downloadText([headers.join(','),...rows].join('\r\n'),`domains_${fdate()}.csv`,'text/csv;charset=utf-8');
+}
+
+function downloadText(text,name,mime){const a=document.createElement('a');a.href='data:'+mime+',\uFEFF'+encodeURIComponent(text);a.download=name;a.click();}
+function downloadBlob(blob,name){const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);}
+function fdate(){return new Date().toISOString().slice(0,10);}
+
+// ══ SUMMARY CHARTS ══
+function renderSummary(){
+  const done=allResults.filter(r=>r.done);
+  if(done.length===0){document.getElementById('summary-empty').style.display='block';document.getElementById('summary-content').style.display='none';return;}
+  document.getElementById('summary-empty').style.display='none';document.getElementById('summary-content').style.display='block';
+  const total=done.length;
+  const noSSL=done.filter(r=>r.ssl==='none'&&!r.error).length;
+  const redirSSL=done.filter(r=>r.ssl==='redirect-https').length;
+  drawDonut('donut-ssl','legend-ssl',[
+    {label:'HTTPS valide',val:statSSL,color:'#2ecc78'},
+    {label:'↪ Redirige',val:redirSSL,color:'#f5a623'},
+    {label:'Sans SSL',val:noSSL,color:'#f05c5c'},
+    {label:'Inaccessible',val:statFail,color:'#2a3050'}
+  ],total,'SSL');
+  drawDonut('donut-content','legend-content',[
+    {label:'Avec contenu',val:statContent,color:'#2ecc78'},
+    {label:'Sans contenu',val:done.filter(r=>!r.hasContent&&!r.error).length,color:'#4f8ef7'},
+    {label:'Erreur',val:statFail,color:'#f05c5c'}
+  ],total,'Contenu');
+  const codes={};done.forEach(r=>{if(r.httpStatus)codes[r.httpStatus]=(codes[r.httpStatus]||0)+1;});
+  const sorted=Object.entries(codes).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const maxC=sorted[0]?.[1]||1;
+  const clr={'2':'#2ecc78','3':'#4f8ef7','4':'#f5a623','5':'#f05c5c'};
+  document.getElementById('bar-http').innerHTML=sorted.map(([code,cnt])=>`<div class="bar-row"><span class="bar-label">HTTP ${code}</span><div class="bar-track"><div class="bar-fill" style="background:${clr[code[0]]||'#4a5468'};width:${Math.round((cnt/maxC)*100)}%"></div></div><span class="bar-count">${cnt}</span></div>`).join('');
+  const speeds=done.filter(r=>r.elapsed).map(r=>r.elapsed);
+  if(speeds.length>0){
+    const b=[{label:'< 500ms',val:speeds.filter(s=>s<500).length,color:'#2ecc78'},{label:'500ms–2s',val:speeds.filter(s=>s>=500&&s<2000).length,color:'#4f8ef7'},{label:'2s–5s',val:speeds.filter(s=>s>=2000&&s<5000).length,color:'#f5a623'},{label:'> 5s',val:speeds.filter(s=>s>=5000).length,color:'#f05c5c'}];
+    const maxS=Math.max(...b.map(x=>x.val))||1;
+    document.getElementById('bar-speed').innerHTML=b.map(x=>`<div class="bar-row"><span class="bar-label">${x.label}</span><div class="bar-track"><div class="bar-fill" style="background:${x.color};width:${Math.round((x.val/maxS)*100)}%"></div></div><span class="bar-count">${x.val}</span></div>`).join('');
+  }
+}
+function drawDonut(id,legendId,segs,total,label){
+  const cv=document.getElementById(id),ctx=cv.getContext('2d');
+  const cx=50,cy=50,r=40,ir=24;
+  ctx.clearRect(0,0,100,100);
+  let angle=-Math.PI/2;
+  segs.filter(s=>s.val>0).forEach(s=>{
+    const sweep=(s.val/total)*2*Math.PI;
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,angle,angle+sweep);ctx.closePath();ctx.fillStyle=s.color;ctx.fill();angle+=sweep;
+  });
+  ctx.beginPath();ctx.arc(cx,cy,ir,0,2*Math.PI);ctx.fillStyle='#0e1220';ctx.fill();
+  ctx.fillStyle='#d8e0f0';ctx.font='bold 11px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(total,cx,cy-4);
+  ctx.fillStyle='#424e64';ctx.font='8px system-ui';ctx.fillText(label,cx,cy+7);
+  document.getElementById(legendId).innerHTML=segs.map(s=>`<div class="legend-item"><span class="legend-dot" style="background:${s.color}"></span>${s.label}<span class="legend-val">${s.val}</span></div>`).join('');
+}
+
+// ══ HISTORY ══
+function renderHistory(){
+  const el=document.getElementById('history-list'),empty=document.getElementById('history-empty');
+  if(!sessionHistory.length){el.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  el.innerHTML=sessionHistory.map(h=>`<div class="history-item">
+    <div style="font-size:0.68rem;color:var(--text3);min-width:140px">${h.date}</div>
+    <div style="font-size:0.8rem;font-weight:600">${h.total} domaines</div>
+    <span class="badge b-green">${I.check}${h.content} contenu</span>
+    <span class="badge b-blue">${I.lock}${h.ssl} SSL</span>
+    <span class="badge b-red">${I.wifi}${h.fail} erreurs</span>
+    <span style="margin-left:auto;font-size:0.68rem;color:var(--text3)">⏱ ${h.elapsed}s</span>
+  </div>`).join('');
+}
+
+// ══ TOAST ══
+let toastT;
+function toast(msg,type='ok'){
+  const el=document.getElementById('toast');
+  const ico=document.getElementById('toast-icon');
+  document.getElementById('toast-msg').textContent=msg;
+  el.className='toast show t-'+type;
+  ico.innerHTML=type==='ok'?`<polyline points="20 6 9 17 4 12"/>`:type==='err'?`<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>`:type==='info'?`<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>`:ico.innerHTML;
+  clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),3000);
+}
+
+// ══ INIT ══
+applyColumns();
 </script>
 </body>
 </html>
